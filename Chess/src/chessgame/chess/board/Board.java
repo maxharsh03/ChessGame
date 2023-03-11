@@ -54,6 +54,54 @@ public class Board {
 	}
 	
 	/** 
+	 * Checks if a straight line path (horizontal/vertical) between 2 
+	 * squares on the board is clear 
+	 * @param piece
+	 * @param row
+	 * @param column
+	 * @return
+	 */
+	public boolean isStraightPathClear(int startRow, int startColumn, int endRow, int endColumn) {
+		int deltaRow = Integer.signum(endRow - startRow);
+	    int deltaColumn = Integer.signum(endColumn - startColumn);
+	    int currentRow = startRow + deltaRow;
+	    int currentColumn = startColumn + deltaColumn;
+	    
+	    while (currentRow != endRow || currentColumn != endColumn) {
+	        if(this.getPieceFromBoard(currentRow, currentColumn) != null) {
+	            return false;
+	        }
+	        currentRow += deltaRow;
+	        currentColumn += deltaColumn;
+	    }
+	    return true;
+	}
+	
+	/**
+	 * Checks if a diagonal path is clear between 2 squares on the board is clear 
+	 * @param startRow
+	 * @param startColumn
+	 * @param endRow
+	 * @param endColumn
+	 * @return
+	 */
+	public boolean isDiagonalPathClear(int startRow, int startColumn, int endRow, int endColumn) {
+		int deltaRow = Integer.signum(endRow - startRow);
+	    int deltaColumn = Integer.signum(endColumn - startColumn);
+	    int currentRow = startRow + deltaRow;
+	    int currentColumn = startColumn + deltaColumn;
+	    
+	    while (currentRow != endRow && currentColumn != endColumn) {
+	        if(this.getPieceFromBoard(currentRow, currentColumn) != null) {
+	            return false;
+	        }
+	        currentRow += deltaRow;
+	        currentColumn += deltaColumn;
+	    }
+	    return true;
+	}
+	
+	/** 
 	 * Retrieve 2D array of Board.
 	 * @return 2D array with all pieces
 	 */

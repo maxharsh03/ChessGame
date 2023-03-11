@@ -10,9 +10,13 @@ public class Rook extends Piece {
 
 	@Override
 	public boolean isValid(int row, int column, Board board) {
-		// TODO Auto-generated method stub
-		return false;
-		
+		if(row < 0 || row > 7 || column < 0 || column > 7) {
+			return false; 
+		} else if(row == this.getRow() || column == this.getColumn()) {
+			if(board.isStraightPathClear(this.getRow(), this.getColumn(), row, column)) {
+				return true;
+			}
+		}
+		return false;	
 	}
-
 }
