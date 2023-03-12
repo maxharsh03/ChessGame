@@ -4,8 +4,8 @@ import chessgame.chess.board.Board;
 
 public class Queen extends Piece {
 
-	public Queen(String name, String color, int row, int column) {
-		super(name, color, row, column);
+	public Queen(Color color, int row, int column) {
+		super(Type.QUEEN, color, row, column);
 	}
 
 	@Override
@@ -20,9 +20,8 @@ public class Queen extends Piece {
         if (Math.abs(deltaRow) == Math.abs(deltaColumn)) {
             return board.isDiagonalPathClear(this.getRow(), this.getColumn(), row, column);
         }
-
         // Check if the move is horizontal or vertical
-        if (deltaRow == 0 || deltaColumn == 0) {
+        else if (deltaRow == 0 || deltaColumn == 0) {
             return board.isStraightPathClear(this.getRow(), this.getColumn(), row, column);
         }
 		return false;

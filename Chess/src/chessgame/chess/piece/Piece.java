@@ -4,23 +4,25 @@ import chessgame.chess.board.Board;
 
 /**
  * Piece is the parent class of all the pieces in a chess game including pawn, rook, bishop, knight, 
- * king, and queen. It contains common functionality that all pieces share like location, name, and how the piece 
- * moves. Each individual piece will have a different move implementation. 
+ * king, and queen. It contains common functionality that all pieces share like location, name, type, 
+ * and how the piece moves. Each individual piece will have a different move implementation. 
  * @author maxharsh
  *
  */
 public abstract class Piece {
 
 	private String name;
-	private String color;
+	private Color color;
 	private int row;
 	private int column;
+	private Type type;
 	
-	public Piece(String name, String color, int row, int column) {
+	public Piece(Type type, Color color, int row, int column) {
 		setName(name);
 		setColor(color);
 		setRow(row);
 		setColumn(column);
+		setType(type);
 	}
 
 	/**
@@ -32,14 +34,14 @@ public abstract class Piece {
 	/**
 	 * @return the color
 	 */
-	public String getColor() {
+	public Color getColor() {
 		return color;
 	}
 
 	/**
 	 * @param color the color to set
 	 */
-	public void setColor(String color) {
+	public void setColor(Color color) {
 		this.color = color;
 	}
 
@@ -57,6 +59,14 @@ public abstract class Piece {
 		this.name = name;
 	}
 
+	public void setType(Type type) {
+		this.type = type;
+	}
+	
+	public Type getType() {
+		return type;
+	}
+	
 	/**
 	 * @return the xLocation
 	 */

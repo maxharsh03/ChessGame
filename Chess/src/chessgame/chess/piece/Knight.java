@@ -4,8 +4,8 @@ import chessgame.chess.board.Board;
 
 public class Knight extends Piece {
 
-	public Knight(String name, String color, int row, int column) {
-		super(name, color, row, column);
+	public Knight(Color color, int row, int column) {
+		super(Type.KNIGHT, color, row, column);
 	}
 
 	/** 

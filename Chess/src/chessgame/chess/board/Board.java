@@ -1,6 +1,9 @@
 package chessgame.chess.board;
 
+import java.util.ArrayList;
+
 import chessgame.chess.piece.Bishop;
+import chessgame.chess.piece.Color;
 import chessgame.chess.piece.King;
 import chessgame.chess.piece.Knight;
 import chessgame.chess.piece.Pawn;
@@ -21,9 +24,13 @@ public class Board {
 	private static final int ROWS = 8;
 	private static final int COLUMNS = 8;
 	private Piece[][] pieces;
+	private ArrayList<Piece> whitePieces;
+	private ArrayList<Piece> blackPieces;
 	
 	private Board() {
 		pieces = new Piece[ROWS][COLUMNS];
+		whitePieces = new ArrayList<Piece>();
+		blackPieces = new ArrayList<Piece>();
 		this.createBoard();
 	}
 	
@@ -110,29 +117,65 @@ public class Board {
 	}
 	
 	/**
+	 * Retrieve list of all white pieces currently on the board
+	 * @return
+	 */
+	public ArrayList<Piece> getWhitePieces() {
+		return whitePieces;
+	}
+	
+	/**
+	 * Retrieve list of all black pieces currently on the board
+	 * @return
+	 */
+	public ArrayList<Piece> getBlackPieces() {
+		return blackPieces;
+	}
+	
+	/**
 	 * Before a game starts, fills the board with pieces for each square 
 	 * that contains a piece in the starting position. 
 	 */
 	public void createBoard() {
 		// black pieces
-		Piece r1 = new Rook("Rook", "White", 0, 0);
-		Piece r2 = new Rook("Rook", "White", 0, 7);
-		Piece n1 = new Knight("Knight", "White", 0, 1);
-		Piece n2 = new Knight("Knight", "White", 0, 6);
-		Piece b1 = new Bishop("Bishop", "White", 0, 2);
-		Piece b2 = new Bishop("Bishop", "White", 0, 5);
-		Piece k1 = new King("King", "White", 0, 4);
-		Piece q1 = new Queen("Queen", "White", 0, 3);
+		Piece r1 = new Rook(Color.WHITE, 0, 0);
+		Piece r2 = new Rook(Color.WHITE, 0, 7);
+		Piece n1 = new Knight(Color.WHITE, 0, 1);
+		Piece n2 = new Knight(Color.WHITE, 0, 6);
+		Piece b1 = new Bishop(Color.WHITE, 0, 2);
+		Piece b2 = new Bishop(Color.WHITE, 0, 5);
+		Piece k1 = new King(Color.WHITE, 0, 4);
+		Piece q1 = new Queen(Color.WHITE, 0, 3);
+		
+		// add black pieces to blackPieces list
+		blackPieces.add(r1);
+		blackPieces.add(r2);
+		blackPieces.add(n1);
+		blackPieces.add(n2);
+		blackPieces.add(b1);
+		blackPieces.add(b2);
+		blackPieces.add(k1);
+		blackPieces.add(q1);
 		
 		// white pieces
-		Piece r3 = new Rook("Rook", "Black", 7, 0);
-		Piece r4 = new Rook("Rook", "Black", 7, 7);
-		Piece n3 = new Knight("Knight", "Black", 7, 1);
-		Piece n4 = new Knight("Knight", "Black", 7, 6);
-		Piece b3 = new Bishop("Bishop", "Black", 7, 2);
-		Piece b4 = new Bishop("Bishop", "Black", 7, 5);
-		Piece k2 = new King("King", "Black", 7, 4);
-		Piece q2 = new Queen("Queen", "Black", 7, 3);
+		Piece r3 = new Rook(Color.BLACK, 7, 0);
+		Piece r4 = new Rook(Color.BLACK, 7, 7);
+		Piece n3 = new Knight(Color.BLACK, 7, 1);
+		Piece n4 = new Knight(Color.BLACK, 7, 6);
+		Piece b3 = new Bishop(Color.BLACK, 7, 2);
+		Piece b4 = new Bishop(Color.BLACK, 7, 5);
+		Piece k2 = new King(Color.BLACK, 7, 4);
+		Piece q2 = new Queen(Color.BLACK, 7, 3);
+		
+		// add white pieces to whitePieces list
+		whitePieces.add(r3);
+		whitePieces.add(r4);
+		whitePieces.add(n3);
+		whitePieces.add(n4);
+		whitePieces.add(b3);
+		whitePieces.add(b4);
+		whitePieces.add(k2);
+		whitePieces.add(q2);
 		
 		// create pieces in top 1st row
 		pieces[0][0] = r1;
@@ -156,7 +199,10 @@ public class Board {
 		
 		// fill in 2nd top row with black pawns
 		for(int i = 0; i < 8; i++) {
-			pieces[1][i] = new Pawn("Pawn", "White", 1, i);
+			Pawn p = new Pawn(Color.BLACK, 1, i);
+			pieces[1][i] = p;
+			// add black pawns to blackPieces list
+			blackPieces.add(p);
 		}
 		
 		// fill in empty squares as null
@@ -168,8 +214,18 @@ public class Board {
 		
 		// fill in 2nd bottom row with white pawns
 		for(int i = 0; i < 8; i++) {
-			pieces[6][i] = new Pawn("Pawn", "White", 6, i);
+			Pawn p = new Pawn(Color.WHITE, 6, i);
+			pieces[6][i] = p;
+			// add white pawns to whitePieces list
+			whitePieces.add(p);
 		}
 	}
-	
+    
+	/** 
+	 * Resets Board when game is over.
+	 */
+    public void resetBoard() {
+        singleton = null;
+    }
+
 }

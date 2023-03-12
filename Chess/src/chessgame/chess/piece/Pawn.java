@@ -20,8 +20,8 @@ public class Pawn extends Piece {
 	 * @param row
 	 * @param column
 	 */
-	public Pawn(String name, String color, int row, int column) {
-		super(name, color, row, column);
+	public Pawn(Color color, int row, int column) {
+		super(Type.PAWN, color, row, column);
 	}
 	
 	/**
@@ -35,7 +35,7 @@ public class Pawn extends Piece {
 			return false;
 		}
 		// white pawn moves
-		else if("White".equals(this.getColor())) {
+		else if(Color.WHITE == this.getColor()) {
 			// checks for first move
 			if(firstMove) {
 				if(row < this.getRow() && this.getRow() - row <= 2 && this.getRow() - row >= 1) {
@@ -57,7 +57,7 @@ public class Pawn extends Piece {
 					}
 				// check for capture diagonally
 				} else if(column == Math.abs(this.getColumn() - 1) && row < this.getRow() && row == this.getRow() - 1 
-						&& board.getPieceFromBoard(row, column) != null && "Black".equals(board.getPieceFromBoard(row, column).getColor())) {
+						&& board.getPieceFromBoard(row, column) != null && Color.BLACK == board.getPieceFromBoard(row, column).getColor()) {
 					//GameManager.capture(this.getRow(), this.getColumn(), row, column, board);
 					return true;
 				// check for en passant
@@ -67,7 +67,7 @@ public class Pawn extends Piece {
 			}
 		}
 		// black pawn moves 
-		else if("Black".equals(this.getColor())) {
+		else if(Color.BLACK == this.getColor()) {
 			// check if square player clicked is out of bounds
 			if(row < 0 || row > 7 || column < 0 || column > 7) {
 				//throw new IllegalArgumentException("Invalid move");
@@ -93,7 +93,7 @@ public class Pawn extends Piece {
 					}
 				// check for capture diagonally
 				} else if(column == Math.abs(this.getColumn() - 1) && row > this.getRow() && row == this.getRow() + 1 
-						&& board.getPieceFromBoard(row, column) != null && "White".equals(board.getPieceFromBoard(row, column).getColor())) {
+						&& board.getPieceFromBoard(row, column) != null && Color.WHITE == board.getPieceFromBoard(row, column).getColor()) {
 					//GameManager.capture(this.getRow(), this.getColumn(), row, column, board);
 					return true;
 				// check for en passant
