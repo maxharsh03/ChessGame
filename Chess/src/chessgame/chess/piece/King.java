@@ -44,13 +44,15 @@ public class King extends Piece {
 			// check for right castling move first
 			Rook tempRook = (Rook) board.getPieceFromBoard(7, 7);
 			Rook tempRook2 = (Rook) board.getPieceFromBoard(7, 0);
-			if(tempRook != null && !tempRook.getHasMoved() && tempRook.getColor() == Color.WHITE 
-					&& !isKingInCheck(7, 5, board, this) && !isKingInCheck(7, 6, board, this) 
+			if(tempRook != null && !tempRook.getHasMoved() && tempRook.getColor() == Color.WHITE  
+					&& board.getPieceFromBoard(7, 5) == null && board.getPieceFromBoard(7, 6) == null 
+					&& !isKingInCheck(7, 5, board, this) && !isKingInCheck(7, 6, board, this)
 					&& this.getRow() == row && row == 6) {
 				// call castling function in GameManager
 				return true;
 			} 
 			else if(tempRook2 != null && !tempRook2.getHasMoved() && tempRook2.getColor() == Color.WHITE
+					&& board.getPieceFromBoard(7, 3) == null && board.getPieceFromBoard(7, 2) == null 
 					&& !isKingInCheck(7, 3, board, this) && !isKingInCheck(7, 2, board, this) 
 					&& this.getRow() == row && row == 2) {
 				// call castling function in GameManager
@@ -63,12 +65,14 @@ public class King extends Piece {
 			Rook tempRook = (Rook) board.getPieceFromBoard(0, 7);
 			Rook tempRook2 = (Rook) board.getPieceFromBoard(0, 0);
 			if(tempRook != null && !tempRook.getHasMoved() && tempRook.getColor() == Color.BLACK 
+					&& board.getPieceFromBoard(0, 5) == null && board.getPieceFromBoard(0, 6) == null 
 					&& !isKingInCheck(0, 5, board, this) && !isKingInCheck(0, 6, board, this) 
 					&& this.getRow() == row && row == 6) {
 				// call castling function in GameManager
 				return true;
 			} 
 			else if(tempRook2 != null && !tempRook2.getHasMoved() && tempRook2.getColor() == Color.BLACK 
+					&& board.getPieceFromBoard(0, 3) == null && board.getPieceFromBoard(0, 2) == null 
 					&& !isKingInCheck(0, 3, board, this) && !isKingInCheck(0, 2, board, this) 
 					&& this.getRow() == row && row == 2) {
 				// call castling function in GameManager
@@ -90,23 +94,27 @@ public class King extends Piece {
 	 */
 	public boolean isKingInCheck(int row, int column, Board board, Piece piece) {
 		// creates a copy of the board and moves piece to see if new position results in king being put in check
-		Piece[][] piecesCopy = board.getBoard();
+		Board boardCopy = board;
+		int initRow = piece.getRow();
+		int initCol = piece.getColumn();
+		Piece[][] piecesCopy = boardCopy.getBoard();
 		piecesCopy[row][column] = piece;
+		piecesCopy[initRow][initCol] = null;
 		
-		ArrayList<Piece> blackPieces= board.getBlackPieces();
-		ArrayList<Piece> whitePieces= board.getWhitePieces();
+		ArrayList<Piece> blackPieces= boardCopy.getBlackPieces();
+		ArrayList<Piece> whitePieces= boardCopy.getWhitePieces();
 		
 		// checks if a given position the king wants to move to results in a check
 		if(Color.WHITE == piece.getColor()) {
 			for(int i = 0; i < blackPieces.size(); i++) {
-				if(blackPieces.get(i).isValid(row, column, board)) {
+				if(blackPieces.get(i).isValid(row, column, boardCopy)) {
 					// will return true if the move is valid and results a check
 					return true;
 				}
 			}
 		} else {
 			for(int i = 0; i < whitePieces.size(); i++) {
-				if(whitePieces.get(i).isValid(row, column, board)) {
+				if(whitePieces.get(i).isValid(row, column, boardCopy)) {
 					return true;
 				}
 			}

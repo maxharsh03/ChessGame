@@ -10,6 +10,7 @@ import chessgame.chess.piece.Pawn;
 import chessgame.chess.piece.Piece;
 import chessgame.chess.piece.Queen;
 import chessgame.chess.piece.Rook;
+import chessgame.chess.piece.Type;
 
 /**
  * Board represents the Chess Board that players play a game on. It has 64 tiles in 
@@ -130,6 +131,24 @@ public class Board {
 	 */
 	public ArrayList<Piece> getBlackPieces() {
 		return blackPieces;
+	}
+	
+	/**
+	 * Retrieves king for a given color.
+	 * @param color
+	 * @return
+	 */
+	public Piece getKing(Color color) {
+		for(int i = 0; i < ROWS; i++) {
+			for(int j = 0; j < COLUMNS; j++) {
+				if(this.getPieceFromBoard(i, j) != null && this.getPieceFromBoard(i, j).getType() == Type.KING) {
+					if(this.getPieceFromBoard(i, j).getColor() == color) {
+						return this.getPieceFromBoard(i, j);
+					}
+				}
+			}
+		}
+		return null;
 	}
 	
 	/**
