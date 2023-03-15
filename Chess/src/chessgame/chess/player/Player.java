@@ -8,6 +8,11 @@
 
 package chessgame.chess.player;
 
+import java.util.ArrayList;
+
+import chessgame.chess.piece.Color;
+import chessgame.chess.piece.Piece;
+
 /**
  * Player represents a player for the chess game, either black or white. This includes information about 
  * the player like what pieces they have left, what state they are in, how many pieces they have 
@@ -16,5 +21,67 @@ package chessgame.chess.player;
  *
  */
 public class Player {
+	/** 
+	 * 
+	 */
+	private String name;
+	/**
+	 * 
+	 */
+    private Color color;
+    /**
+     * 
+     */
+    private ArrayList<Piece> pieces;
 
+    /**
+     * 
+     * @param name
+     * @param color
+     */
+    public Player(String name, Color color) {
+        this.name = name;
+        this.color = color;
+        this.pieces = new ArrayList<>();
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public String getName() {
+        return name;
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public Color getColor() {
+        return color;
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public ArrayList<Piece> getPieces() {
+        return pieces;
+    }
+
+    /**
+     * 
+     * @param piece
+     */
+    public void addPiece(Piece piece) {
+        pieces.add(piece);
+    }
+
+    /**
+     * 
+     * @param piece
+     */
+    public void removePiece(Piece piece) {
+        pieces.remove(piece);
+    }
 }

@@ -32,12 +32,52 @@ public class GameManager {
 	/** whether it is white's turn or not*/
 	public boolean whitesTurn;
 	
+	private Board board;
+	
+	private Player[] players;
+	
+	private int currentPlayerIndex;
+	
+	/**
+	 * 
+	 */
 	public GameManager() {
 		listAllValidMoves = new HashMap<Integer[], Integer[]>();
 		lastPieceMoved = null;
-		whitesTurn = true;
 		whiteHasCaptured = new ArrayList<Piece>();
 		blackHasCaptured = new ArrayList<Piece>();
+		board = new Board();
+		players[0] = new Player("Player 1", Color.WHITE);	
+		players[1] = new Player("Player 2", Color.BLACK);
+		currentPlayerIndex = 0;
+		initPlayerPieces();
+	}
+	
+	/**
+	 * 
+	 */
+	public void initPlayerPieces() {
+		for(int i = 0; i < 8; i++) {
+			for(int j = 0; j < 8; j++) {
+				if(board.getBoard()[i][j] != null) {
+					if(board.getBoard()[i][j].getColor() == players[0].getColor()) {
+						players[0].addPiece(board.getBoard()[i][j]);
+					} else {
+						players[1].addPiece(board.getBoard()[i][j]);
+					}
+				}
+			}
+		}
+	}
+	
+	public void switchPlayer() {
+	 	currentPlayerIndex = (currentPlayerIndex + 1) % 2;
+	}
+	public Player getCurrentPlayer() {
+		return players[currentPlayerIndex];
+	}
+	public Board getBoard() {
+	 	return board;
 	}
 	
 	/**
@@ -48,43 +88,54 @@ public class GameManager {
 	}
 	
 	/**
-	 * 
+	 * This method can check whether the position passed in 
+	 * position is empty through board.getPiece(), check if it is out of bounds, if the move results in a player exposing 
+	 * a friendly king to a check (through a pin), or if the player is already in check if the move gets the player's king 
+	 * out of check. Otherwise, if there is no special condition, allow the player to move to the desired square and then 
+	 * determine if there is a capture. This method should only need to receive the coordinates for the initial and final 
+	 * position on the board.
 	 * @param rowInitial
 	 * @param columnInitial
 	 * @param rowFinal
 	 * @param columnFinal
 	 * @param board
 	 */
-	public void move(int rowInitial, int columnInitial, int rowFinal, int columnFinal, Board board, Piece piece) {
-		if(whitesTurn && piece.getColor() == Color.BLACK) {
-			throw new IllegalArgumentException("Invalid move");
-		} else if(!whitesTurn && piece.getColor() == Color.BLACK) {
-			throw new IllegalArgumentException("Invalid move");
+	public boolean makeMove(int rowInitial, int columnInitial, int rowFinal, int columnFinal) {
+		// check if starting or ending position are out of bounds
+		if(rowInitial < 0 || rowInitial > 7 || columnInitial < 0 || columnInitial > 7 || rowFinal < 0
+				|| rowFinal > 7 || columnFinal < 0 || columnFinal > 7) {
+			return false;
 		}
-		// no pieces for a color can move if their king is in check, unless it is the king getting out of check
-		// or the piece getting the king out of check by either capturing the piece putting the king in check or 
-		// blocking the piece putting the king in check
-		// a piece should not be moved if it results in the capture of the opposing king
-		// a piece should not be moved if it results in its own king being put in check
 		
-		// if the final destination for a piece is not null and not the same color as the piece moved, then 
-		// call capture method to handle functionality
-		else if(piece.getType() == Type.PAWN && piece.isValid(rowFinal, columnFinal, board)) {
-			if(isKingInCheck(board.getKing(piece.getColor()), rowFinal, columnFinal, piece, board));
-			moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, board, piece);
-		} else if(piece.getType() == Type.BISHOP && piece.isValid(rowFinal, columnFinal, board)) {
-			moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, board, piece);
-		} else if(piece.getType() == Type.KNIGHT && piece.isValid(rowFinal, columnFinal, board)) {
-			moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, board, piece);
-		} else if(piece.getType() == Type.ROOK && piece.isValid(rowFinal, columnFinal, board)) {
-			moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, board, piece);
-		} else if(piece.getType() == Type.QUEEN && piece.isValid(rowFinal, columnFinal, board)) {
-			moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, board, piece);
-		} else if(piece.getType() == Type.KING && piece.isValid(rowFinal, columnFinal, board)) {
-			moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, board, piece);
+		// ensure that player is not trying to move piece to same position its on
+		if(rowInitial == rowFinal && columnInitial == columnFinal) {
+			return false;
 		}
+		
+		Piece piece = board.getPieceFromBoard(rowInitial, columnInitial);
+		
+		// checks if player attempted to move a piece that does not exist or one that is not theirs
+		if(piece == null || getCurrentPlayer().getColor() != piece.getColor()) {
+			return false;
+		} 
+				
+		// checks that player does not try to capture piece of same color
+		if(board.getPieceFromBoard(rowFinal, columnFinal).getColor() == piece.getColor()) {
+			return false;
+		}
+		
+		// not a valid move for the piece type 
+		if(!piece.isValid(rowFinal, columnFinal, board)) {
+			return false;
+		}
+		
+		if(!isKingInCheck(columnFinal, columnFinal, piece)) {
+			moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, piece);
+		}
+		
 		// switch turn after move for a player
-		setWhitesTurn();
+		switchPlayer();
+		return false;
 	}
 	
 	/** 
@@ -104,26 +155,12 @@ public class GameManager {
 	 * @param board
 	 */
 	public void rightCastle(Color color, Board board) {
-		//Piece[][] pieces = board.getBoard();
-		
 		if(color == Color.WHITE) {
-			moveHelper(7, 7, 7, 5, board, board.getPieceFromBoard(7, 7));
-			//board.getBoard()[7][5] = board.getBoard()[7][7];
-			//board.getPieceFromBoard(7, 5).setColumn(5);
-			//board.getBoard()[7][7] = null;
-			moveHelper(7, 4, 7, 6, board, board.getPieceFromBoard(7, 4));
-			//board.getBoard()[7][6] = board.getBoard()[7][4];
-			//board.getPieceFromBoard(7, 6).setColumn(6);
-			//board.getBoard()[7][4] = null;
+			moveHelper(7, 7, 7, 5, board.getPieceFromBoard(7, 7));			
+			moveHelper(7, 4, 7, 6, board.getPieceFromBoard(7, 4));
 		} else {
-			moveHelper(0, 7, 0, 5, board, board.getPieceFromBoard(0, 7));
-			//board.getBoard()[0][5] = board.getBoard()[0][7];
-			//board.getPieceFromBoard(0, 5).setColumn(5);
-			//board.getBoard()[0][7] = null;
-			moveHelper(0, 4, 0, 6, board, board.getPieceFromBoard(0, 4));
-			//board.getBoard()[0][6] = board.getBoard()[0][4];
-			//board.getPieceFromBoard(0, 6).setColumn(6);
-			//board.getBoard()[0][4] = null;
+			moveHelper(0, 7, 0, 5, board.getPieceFromBoard(0, 7));
+			moveHelper(0, 4, 0, 6, board.getPieceFromBoard(0, 4));
 		}
 	}
 	
@@ -134,19 +171,46 @@ public class GameManager {
 	 */
 	public void leftCastle(Color color, Board board) {
 		if(color == Color.WHITE) {
-			moveHelper(7, 0, 7, 3, board, board.getPieceFromBoard(7, 0));
-			moveHelper(7, 4, 7, 2, board, board.getPieceFromBoard(7, 4));
+			moveHelper(7, 0, 7, 3, board.getPieceFromBoard(7, 0));
+			moveHelper(7, 4, 7, 2, board.getPieceFromBoard(7, 4));
 		} else {
-			moveHelper(0, 0, 0, 3, board, board.getPieceFromBoard(0, 0));
-			moveHelper(0, 4, 0, 2, board, board.getPieceFromBoard(0, 4));
+			moveHelper(0, 0, 0, 3, board.getPieceFromBoard(0, 0));
+			moveHelper(0, 4, 0, 2, board.getPieceFromBoard(0, 4));
 		}
 	}
 	
-	public void moveHelper(int rowInitial, int columnInitial, int rowFinal, int columnFinal, Board board, Piece piece) {
+	public void moveHelper(int rowInitial, int columnInitial, int rowFinal, int columnFinal, Piece piece) {
 		board.getBoard()[rowFinal][columnFinal] = piece;
 		board.getPieceFromBoard(rowFinal, columnFinal).setRow(rowFinal);
 		board.getPieceFromBoard(rowFinal, columnFinal).setColumn(columnFinal);
 		board.getBoard()[rowInitial][columnInitial] = null;
+	}
+	
+	public void canMove() {
+		
+	}
+	
+	/**
+	 * Determines if king for a given player is currently in check.
+	 * @return
+	 */
+	
+	public boolean isCheck() {
+		King king = (King) board.getKing(getCurrentPlayer().getColor());
+		return king.kingCurrentlyInCheck(board);
+	}
+	
+	/** 
+	 * Determines whether the king for a given player is currently in checkmate. 
+	 * @return
+	 */
+	public boolean isCheckmate() {
+		
+		if(!isCheck()) {
+			return false;
+		}
+		return true;
+		
 	}
 	
 	/** 
@@ -199,6 +263,50 @@ public class GameManager {
 	}
 
 	/**
+	 * Determines if a player's king is in check at the current position. 
+	 * @param king
+	 * @param moveRow
+	 * @param moveCol
+	 * @param piece
+	 * @param board
+	 * @return
+	 */
+	public boolean isKingInCheck(int row, int column, Piece piece) {
+		Board boardCopy = (Board) board.clone();
+		ArrayList<Piece> blackPieces = new ArrayList<Piece>();
+		ArrayList<Piece> whitePieces = new ArrayList<Piece>();
+		
+		// make a deep copy of the new pieces array 
+		for(int i = 0; i < board.getBoard().length; i++) {
+			for(int j = 0; j < board.getBoard()[0].length; j++) {
+				boardCopy.setPieceAt(i, j, board.getPieceFromBoard(row, column));
+			}
+		}
+		
+		Piece[][] piecesCopy = boardCopy.getBoard();
+		
+		// now do move on cloned pieces array
+		King king = (King) boardCopy.getKing(piece.getColor());
+		piecesCopy[row][column] = piece;
+		piecesCopy[piece.getRow()][piece.getColumn()] = null;
+	
+		
+		// checks if moving a piece will expose a player's king to check
+		for(int i = 0; i < boardCopy.getBoard().length; i++) {
+			for(int j = 0; i < boardCopy.getBoard()[0].length; j++) {
+				Piece p = boardCopy.getBoard()[i][j];
+				if(p != null && p.getColor() != piece.getColor()) {
+					if(p.isValid(king.getRow(), king.getColumn(), boardCopy)) {
+						// will return true if the move is valid and results in a check
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	/**
 	 * Retrieve list of valid moves for a piece.
 	 * @return the listAllValidMoves
 	 */
@@ -218,6 +326,7 @@ public class GameManager {
 	 * each valid ending position. 
 	 * @param listAllValidMoves the listAllValidMoves to set
 	 */
+	/*
 	public void setListAllValidMoves(Board board, Piece piece) {
 		// must also verify isKingInCheck for each move
 		int initRow = piece.getRow();
@@ -231,58 +340,6 @@ public class GameManager {
 			}
 		}
 	}
+	*/
 
-	/**
-	 * Determines if after a player moves a piece (ex. moving a pinned pawn), if the player's king is 
-	 * put into check. 
-	 * @param king
-	 * @param moveRow
-	 * @param moveCol
-	 * @param piece
-	 * @param board
-	 * @return
-	 */
-	public boolean isKingInCheck(Piece king, int row, int column, Piece piece, Board board) {
-		Board boardCopy = board;
-		Piece[][] piecesCopy = boardCopy.getBoard();
-		int initRow = piece.getRow();
-		int initCol = piece.getColumn();
-		piecesCopy[row][column] = piece;
-		piecesCopy[initRow][initCol] = null;
-		
-		
-		ArrayList<Piece> blackPieces= boardCopy.getBlackPieces();
-		ArrayList<Piece> whitePieces= boardCopy.getWhitePieces();
-		
-		// checks if a given position the king wants to move to results in a check
-		if(Color.WHITE == piece.getColor()) {
-			for(int i = 0; i < blackPieces.size(); i++) {
-				if(blackPieces.get(i).isValid(king.getRow(), king.getColumn(), boardCopy)) {
-					// will return true if the move is valid and results a check
-					return true;
-				}
-			}
-		} else {
-			for(int i = 0; i < whitePieces.size(); i++) {
-				if(whitePieces.get(i).isValid(king.getRow(), king.getColumn(), boardCopy)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	/**
-	 * @return whitesTurn
-	 */
-	public boolean getWhitesTurn() {
-		return whitesTurn;
-	}
-
-	/**
-	 * @param whitesTurn the whitesTurn to set
-	 */
-	public void setWhitesTurn() {
-		this.whitesTurn = !whitesTurn;
-	}
 }

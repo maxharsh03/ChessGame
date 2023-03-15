@@ -14,38 +14,24 @@ import chessgame.chess.piece.Type;
 
 /**
  * Board represents the Chess Board that players play a game on. It has 64 tiles in 
- * the form of a 2D array. Contains all of the pieces on the Board. There should only be one 
- * instance of a Board object at a time because only one game can be played at a time. 
+ * the form of a 2D array. Contains all of the pieces on the Board. Is able to be cloned 
+ * for functionality necessary within GameManager such as looking for check and checkmate, 
+ * and for the AI when it is looking for moves. 
  * @author maxharsh
  *
  */
-public class Board {
+public class Board implements Cloneable {
 
-	private static Board singleton;
+	//private static Board singleton;
 	private static final int ROWS = 8;
 	private static final int COLUMNS = 8;
 	private Piece[][] pieces;
 	private ArrayList<Piece> whitePieces;
 	private ArrayList<Piece> blackPieces;
 	
-	private Board() {
+	public Board() {
 		pieces = new Piece[ROWS][COLUMNS];
-		whitePieces = new ArrayList<Piece>();
-		blackPieces = new ArrayList<Piece>();
 		this.createBoard();
-	}
-	
-	/**
-	 * Will determine if a Board object already exists. If 
-	 * it doesn't exist yet, this method will call the private constructor
-	 * to make a new Board object.
-	 * @return singleton instance of Board
-	 */
-	public static Board getInstance() {
-		if (singleton == null) {
-			singleton = new Board();
-		}
-		return singleton;
 	}
 	
 	/**
@@ -59,6 +45,21 @@ public class Board {
 			return pieces[row][column];
 		}
 		return null;
+	}
+	
+	/**
+	 * Retrieves cloned object.
+	 */
+	public Object clone(){  
+	    try{  
+	        return super.clone();  
+	    }catch(Exception e){ 
+	        return null; 
+	    }
+	}
+	
+	public void setPieceAt(int row, int column, Piece piece) {
+		pieces[row][column] = piece;
 	}
 	
 	/** 
@@ -238,13 +239,20 @@ public class Board {
 			// add white pawns to whitePieces list
 			whitePieces.add(p);
 		}
+		
+		// add white pieces to whitePieces list
+		for(int i = 0; i < 2; i++) {
+			for(int j = 0; j < 8; j++) {
+				whitePieces.add(pieces[i][j]);
+			}
+		}
+		
+		// add black pieces to blackPieces list
+		for(int i = 6; i < 8; i++) {
+			for(int j = 0; j < 8; j++) {
+				blackPieces.add(pieces[i][j]);
+			}
+		}
+		
 	}
-    
-	/** 
-	 * Resets Board when game is over.
-	 */
-    public void resetBoard() {
-        singleton = null;
-    }
-
 }

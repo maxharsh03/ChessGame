@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import chessgame.chess.board.Board;
 
+// DO NOT NEED TO CHECK FOR ANY check or checkmate FUNCTIONALITY IN THIS CLASS, let that be determined by GameManager
+
 /** 
  * 
  * @author maxharsh
@@ -92,6 +94,10 @@ public class King extends Piece {
 	 * @param board
 	 * @return whether king in check or not
 	 */
+	
+	// MIGHT TAKE OUT AND JUST CALL IMPLEMENTATION FROM GameManager
+	// ALSO WILL CREATE INFINITE RECURSION W/ calling isValid and then isValid calling isKingInCheck again
+	
 	public boolean isKingInCheck(int row, int column, Board board, Piece piece) {
 		// creates a copy of the board and moves piece to see if new position results in king being put in check
 		Board boardCopy = board;
