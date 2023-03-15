@@ -1,6 +1,5 @@
 # ChessGame
-## Creates a chess game that a user can play against an artificial intelligence player. Contains all basic rules of chess
-## like castling, captures, en passant, and pawn promotion.  
+## Creates a chess game that a user can play against an artificial intelligence player. Contains all basic rules of chess like castling, captures, en passant, and pawn promotion.  
 
 # Chess
 ## Has 5 packages
