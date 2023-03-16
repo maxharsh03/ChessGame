@@ -33,6 +33,8 @@ public class Player {
      * 
      */
     private ArrayList<Piece> pieces;
+    
+    private ArrayList<Piece> captured;
 
     /**
      * 
@@ -42,7 +44,8 @@ public class Player {
     public Player(String name, Color color) {
         this.name = name;
         this.color = color;
-        this.pieces = new ArrayList<>();
+        this.pieces = new ArrayList<Piece>();
+        this.captured = new ArrayList<Piece>();
     }
 
     /**
@@ -75,6 +78,10 @@ public class Player {
      */
     public void addPiece(Piece piece) {
         pieces.add(piece);
+    }
+    
+    public void addCaptured(Piece piece) {
+        captured.add(piece);
     }
 
     /**

@@ -1,11 +1,11 @@
 package chessgame.chess.manager;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import chessgame.chess.board.Board;
 import chessgame.chess.piece.Color;
 import chessgame.chess.piece.Piece;
+import chessgame.chess.piece.Rook;
 import chessgame.chess.piece.Type;
 import chessgame.chess.piece.King;
 import chessgame.chess.player.Player;
@@ -21,31 +21,23 @@ public class GameManager {
 
 	/** Represents the Piece that was last moved on the board */
 	public Piece lastPieceMoved;
-	/** List of black pieces white has captured */
-	public ArrayList<Piece> whiteHasCaptured;
-	/** List of white pieces black has captured*/
-	public ArrayList<Piece> blackHasCaptured;
 	/** Maps each starting coordinate to its ending coordinate for all valid moves. For generating AI moves 
 	 * primarily.
 	 */
 	public HashMap<Integer[], Integer[]> listAllValidMoves;
-	/** whether it is white's turn or not*/
-	public boolean whitesTurn;
-	
+	/** Board object that contains the pieces.  */
 	private Board board;
-	
+	/** Array of the 2 players playing the chess game. */
 	private Player[] players;
-	
+	/** Index of the current player  */
 	private int currentPlayerIndex;
 	
 	/**
-	 * 
+	 * Creates a new GameManger object. 
 	 */
 	public GameManager() {
 		listAllValidMoves = new HashMap<Integer[], Integer[]>();
 		lastPieceMoved = null;
-		whiteHasCaptured = new ArrayList<Piece>();
-		blackHasCaptured = new ArrayList<Piece>();
 		board = new Board();
 		players[0] = new Player("Player 1", Color.WHITE);	
 		players[1] = new Player("Player 2", Color.BLACK);
@@ -54,7 +46,7 @@ public class GameManager {
 	}
 	
 	/**
-	 * 
+	 * Loads white and black pieces for each respective player. 
 	 */
 	public void initPlayerPieces() {
 		for(int i = 0; i < 8; i++) {
@@ -70,12 +62,20 @@ public class GameManager {
 		}
 	}
 	
+	/**
+	 * After a turn is completed, switches the current player.
+	 */
 	public void switchPlayer() {
 	 	currentPlayerIndex = (currentPlayerIndex + 1) % 2;
 	}
 	public Player getCurrentPlayer() {
 		return players[currentPlayerIndex];
 	}
+	
+	/**
+	 * Allows GUI to get the board. 
+	 * @return the chess board 
+	 */
 	public Board getBoard() {
 	 	return board;
 	}
@@ -88,12 +88,11 @@ public class GameManager {
 	}
 	
 	/**
-	 * This method can check whether the position passed in 
-	 * position is empty through board.getPiece(), check if it is out of bounds, if the move results in a player exposing 
-	 * a friendly king to a check (through a pin), or if the player is already in check if the move gets the player's king 
-	 * out of check. Otherwise, if there is no special condition, allow the player to move to the desired square and then 
-	 * determine if there is a capture. This method should only need to receive the coordinates for the initial and final 
-	 * position on the board.
+	 * This method can check whether the position passed in is empty through board.getPiece(), check if it is out of bounds, 
+	 * if the move results in a player exposing a friendly king to a check (through a pin), or if the player is already in 
+	 * check if the move gets the player's king out of check. Otherwise, if there is no special condition, allow the player 
+	 * to move to the desired square and then determine if there is a capture. This method should only need to receive the 
+	 * coordinates for the initial and final position on the board.
 	 * @param rowInitial
 	 * @param columnInitial
 	 * @param rowFinal
@@ -113,29 +112,106 @@ public class GameManager {
 		}
 		
 		Piece piece = board.getPieceFromBoard(rowInitial, columnInitial);
+		Piece possibleCapture = board.getPieceFromBoard(rowFinal, columnFinal);
 		
 		// checks if player attempted to move a piece that does not exist or one that is not theirs
 		if(piece == null || getCurrentPlayer().getColor() != piece.getColor()) {
 			return false;
 		} 
+		
+		// must handle castling moves entirely separately within King class
+		if(piece.getType() == Type.KING) {
+			King king = (King) piece;
+			if((rowInitial == 0 && columnInitial == 4 && rowFinal == rowInitial && columnFinal == 2)
+					|| (rowInitial == 7 && columnInitial == 4 && rowFinal == rowInitial && columnFinal == 2)) {
+				if(piece.isValid(rowFinal, columnFinal, board)) {
+					leftCastle(piece.getColor(), board);
+					king.setCastled(true);
+					king.setHasMoved(true);
+					return true;
+				}
+			} 
+			else if((rowInitial == 0 && columnInitial == 4 && rowFinal == rowInitial && columnFinal == 6)
+					|| (rowInitial == 7 && columnInitial == 4 && rowFinal == rowInitial && columnFinal == 6)) {
+				if(piece.isValid(rowFinal, columnFinal, board)) {
+					rightCastle(piece.getColor(), board);
+					king.setCastled(true);
+					king.setHasMoved(true);
+					return true;
+				}
+			} 
+			else {
+				if(piece.isValid(rowFinal, columnFinal, board)) {
+					moveHelper(columnInitial, rowFinal, rowFinal, columnFinal, piece);
+					king.setHasMoved(true);
+				}
+			}
+		}
 				
 		// checks that player does not try to capture piece of same color
-		if(board.getPieceFromBoard(rowFinal, columnFinal).getColor() == piece.getColor()) {
+		if(possibleCapture != null && possibleCapture.getColor() == piece.getColor()) {
 			return false;
 		}
 		
-		// not a valid move for the piece type 
+		// checks that the player made a valid move for the piece type 
 		if(!piece.isValid(rowFinal, columnFinal, board)) {
 			return false;
 		}
 		
-		if(!isKingInCheck(columnFinal, columnFinal, piece)) {
-			moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, piece);
+		// create copy of board to verify check and checkmate 
+		Board boardCopy = (Board) board.clone();
+		Piece[][] piecesCopy = new Piece[8][8];
+		
+		// make a deep copy of the new pieces array 
+		for(int i = 0; i < board.getBoard().length; i++) {
+			for(int j = 0; j < board.getBoard()[0].length; j++) {
+				//boardCopy.setPieceAt(i, j, board.getPieceFromBoard(row, column));
+				if(board.getPieceFromBoard(i, j) != null) {
+					piecesCopy[i][j] = board.getPieceFromBoard(i, j);
+				}
+			}
 		}
 		
-		// switch turn after move for a player
+		// now do move on cloned pieces array
+		piecesCopy[rowFinal][columnFinal] = piece;
+		piecesCopy[piece.getRow()][piece.getColumn()] = null;
+		
+		//checks that king is not currently in check
+		if(!isKingInCheck(piece.getColor(), board)) {
+			// after the mock move, we need to ensure that the king is not exposed to a check
+			if(isKingInCheck(piece.getColor(), boardCopy)) {
+				return false;
+			}
+		// if player is in check, we have to see if the move will get the player out of check
+		} else {
+			if(isKingInCheck(piece.getColor(), boardCopy)) {
+				return false;
+			}
+		}
+		// make move on board and set last piece moved
+		// also have to set rook to moved if it was moved for castling purposes
+		moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, piece);
+		if(piece.getType() == Type.ROOK) {
+			Rook rook = (Rook) piece;
+			rook.setHasMoved(true);
+		} 
+		setLastPieceMoved(piece);
+		
+		// switch player and handle capture
 		switchPlayer();
-		return false;
+		if(possibleCapture != null) {
+			getCurrentPlayer().removePiece(possibleCapture);
+			players[(currentPlayerIndex + 1) % 2].addCaptured(possibleCapture);
+		}
+		
+		// determine if there is a new check or checkmate that has occurred
+		if(isCheck()) {
+			System.out.println(getCurrentPlayer().getColor() + " is in check!");
+		} else if(isCheckmate()) {
+			System.out.println(getCurrentPlayer().getColor() + " is in checkmate!");
+			return false;
+		}
+		return true;
 	}
 	
 	/** 
@@ -186,10 +262,6 @@ public class GameManager {
 		board.getBoard()[rowInitial][columnInitial] = null;
 	}
 	
-	public void canMove() {
-		
-	}
-	
 	/**
 	 * Determines if king for a given player is currently in check.
 	 * @return
@@ -197,7 +269,7 @@ public class GameManager {
 	
 	public boolean isCheck() {
 		King king = (King) board.getKing(getCurrentPlayer().getColor());
-		return king.kingCurrentlyInCheck(board);
+		return king.isKingInCheck(king.getRow(), king.getColumn(), board);
 	}
 	
 	/** 
@@ -271,32 +343,16 @@ public class GameManager {
 	 * @param board
 	 * @return
 	 */
-	public boolean isKingInCheck(int row, int column, Piece piece) {
-		Board boardCopy = (Board) board.clone();
-		ArrayList<Piece> blackPieces = new ArrayList<Piece>();
-		ArrayList<Piece> whitePieces = new ArrayList<Piece>();
-		
-		// make a deep copy of the new pieces array 
-		for(int i = 0; i < board.getBoard().length; i++) {
-			for(int j = 0; j < board.getBoard()[0].length; j++) {
-				boardCopy.setPieceAt(i, j, board.getPieceFromBoard(row, column));
-			}
-		}
-		
-		Piece[][] piecesCopy = boardCopy.getBoard();
-		
-		// now do move on cloned pieces array
-		King king = (King) boardCopy.getKing(piece.getColor());
-		piecesCopy[row][column] = piece;
-		piecesCopy[piece.getRow()][piece.getColumn()] = null;
+	public boolean isKingInCheck(Color color, Board board) {
 	
+		King king = (King) board.getKing(color);
 		
 		// checks if moving a piece will expose a player's king to check
-		for(int i = 0; i < boardCopy.getBoard().length; i++) {
-			for(int j = 0; i < boardCopy.getBoard()[0].length; j++) {
-				Piece p = boardCopy.getBoard()[i][j];
-				if(p != null && p.getColor() != piece.getColor()) {
-					if(p.isValid(king.getRow(), king.getColumn(), boardCopy)) {
+		for(int i = 0; i < board.getBoard().length; i++) {
+			for(int j = 0; i < board.getBoard()[0].length; j++) {
+				Piece p = board.getBoard()[i][j];
+				if(p != null && p.getColor() != color) {
+					if(p.isValid(king.getRow(), king.getColumn(), board)) {
 						// will return true if the move is valid and results in a check
 						return true;
 					}
