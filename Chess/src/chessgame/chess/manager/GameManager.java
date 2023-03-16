@@ -1,5 +1,6 @@
 package chessgame.chess.manager;
 
+
 import java.util.HashMap;
 
 import chessgame.chess.board.Board;
@@ -202,6 +203,7 @@ public class GameManager {
 		if(possibleCapture != null) {
 			getCurrentPlayer().removePiece(possibleCapture);
 			players[(currentPlayerIndex + 1) % 2].addCaptured(possibleCapture);
+			updateScore(players[(currentPlayerIndex + 1) % 2], possibleCapture);
 		}
 		
 		// determine if there is a new check or checkmate that has occurred
@@ -280,6 +282,41 @@ public class GameManager {
 		
 		if(!isCheck()) {
 			return false;
+		}
+		
+		Board boardCopy = (Board) board.clone();
+		Piece[][] piecesCopy = new Piece[8][8];
+		
+		for(int i = 0; i < 8; i++) {
+			for(int j = 0; j < 8; j++) {
+				Piece piece = board.getPieceFromBoard(i, j);
+				if(piece != null) {
+					piecesCopy[i][j] = piece;
+				}
+			}
+		}
+		
+		for(int startRow = 0; startRow < 8; startRow++) {
+			for(int startCol = 0; startCol < 8; startCol++) {
+				Piece piece = board.getPieceFromBoard(startRow, startCol);
+				if(piece != null && piece.getColor() == getCurrentPlayer().getColor()) {
+					for(int endRow = 0; endRow < 8; endRow++) {
+						for(int endCol = 0; endCol < 8; endCol++) {
+							Piece captured = board.getPieceFromBoard(endRow, endCol);
+							if(piece.isValid(endRow, startRow, boardCopy));
+							piecesCopy[endRow][endCol] = piece;
+							piecesCopy[startRow][startCol] = null;
+							
+							if(!isKingInCheck(getCurrentPlayer().getColor(), boardCopy)) {
+								return false;
+							}
+							// if not checkmate reset boardCopy to original position
+							piecesCopy[startRow][startCol] = piece;
+							piecesCopy[endRow][endCol] = captured;
+						}
+					}
+				}
+			}
 		}
 		return true;
 		
