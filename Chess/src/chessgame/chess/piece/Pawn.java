@@ -11,7 +11,7 @@ import chessgame.chess.board.Board;
 public class Pawn extends Piece {
 
 	private boolean firstMove = true;
-	private boolean enPassant = false;
+	private boolean hasDoneEnPassant = false;
 	
 	/**
 	 * Constructs Pawn object with values for all fields
@@ -29,88 +29,115 @@ public class Pawn extends Piece {
 	 */
 	@Override
 	public boolean isValid(int row, int column, Board board) {
+		int deltaRow = this.getRow() - row;
+		int deltaCol = this.getColumn() - column;
+		
 		// check if square player clicked is out of bounds
 		if(row < 0 || row > 7 || column < 0 || column > 7) {
 			//throw new IllegalArgumentException("Invalid move");
 			return false;
 		}
 		// white pawn moves
-		else if(Color.WHITE == this.getColor()) {
-			// checks for first move
-			if(firstMove) {
-				if(row < this.getRow() && this.getRow() - row <= 2 && this.getRow() - row >= 1) {
-					//this.setRow(row);
+		if(Color.WHITE == this.getColor()) {
+			// handle first move
+			if(this.getRow() == 6) {
+				if(deltaCol == 0) {
+					if(deltaRow == 2 && board.getPieceFromBoard(row - 1, column) == null 
+							&& board.getPieceFromBoard(row, column) == null) {
+						return true;
+					}
+					if(deltaRow == 1 && board.getPieceFromBoard(row, column) == null) {
+						return true;
+					}
+					return false;
+				}
+				if(deltaRow == 1 && (deltaCol == 1 || deltaCol == -1) && board.getPieceFromBoard(row, column) != null
+						&& board.getPieceFromBoard(row, column).getColor() != Color.WHITE) {
 					return true;
 				} else {
-					//throw new IllegalArgumentException("Invalid move");
 					return false;
 				}
 			} else {
 				// after first move, no capture
-				if(column == this.getColumn()) {
-					if(row < this.getRow() && this.getRow() - row == 1) {
-						//this.setRow(row);
+				if(deltaCol == 0) {
+					if(deltaRow == 1 && board.getPieceFromBoard(row, column) == null) {
 						return true;
-					} else {
-						//throw new IllegalArgumentException("Invalid move");
-						return false;
-					}
+					} 
+					return false;
 				// check for capture diagonally
 				} else if(column == Math.abs(this.getColumn() - 1) && row < this.getRow() && row == this.getRow() - 1 
 						&& board.getPieceFromBoard(row, column) != null && Color.BLACK == board.getPieceFromBoard(row, column).getColor()) {
-					//GameManager.capture(this.getRow(), this.getColumn(), row, column, board);
 					return true;
 				// check for en passant
-				} else if(row == 1) {
-					
+				} else if(this.getRow() == 3) {
+					if(board.getPieceFromBoard(this.getRow(), this.getColumn() - 1).getType() == Type.PAWN &&
+							board.getPieceFromBoard(this.getRow(), this.getColumn() - 1).getColor() == Color.BLACK) {
+						if(deltaRow == 1 && deltaCol == -1 && board.getPieceFromBoard(row, column) == null) {
+							return true;
+						}
+						return false;
+					}
+					if(board.getPieceFromBoard(this.getRow(), this.getColumn() + 1).getType() == Type.PAWN &&
+							board.getPieceFromBoard(this.getRow(), this.getColumn() + 1).getColor() == Color.BLACK) {
+						if(deltaRow == 1 && deltaCol == 1 && board.getPieceFromBoard(row, column) == null) {
+							return true;
+						}
+						return false;
+					}
+					return false;
 				}
 			}
 		}
 		// black pawn moves 
 		else if(Color.BLACK == this.getColor()) {
-			// check if square player clicked is out of bounds
-			if(row < 0 || row > 7 || column < 0 || column > 7) {
-				//throw new IllegalArgumentException("Invalid move");
-				return false;
-			}
 			// checks for first move
-			else if(firstMove) {
-				if(row > this.getRow() && row - this.getRow() <= 2 && row - this.getRow() >= 1) {
-					//this.setRow(row);
+			if(this.getRow() == 6) {
+				if(deltaCol == 0) {
+					if(deltaRow == -2 && board.getPieceFromBoard(row + 1, column) == null 
+							&& board.getPieceFromBoard(row, column) == null) {
+						return true;
+					}
+					if(deltaRow == -1 && board.getPieceFromBoard(row, column) == null) {
+						return true;
+					}
+					return false;
+				}
+				if(deltaRow == -1 && (deltaCol == 1 || deltaCol == -1) && board.getPieceFromBoard(row, column) != null
+						&& board.getPieceFromBoard(row, column).getColor() != Color.WHITE) {
 					return true;
 				} else {
-					//throw new IllegalArgumentException("Invalid move");
 					return false;
 				}
 			} else {
-				// after first move, no capture 
-				if(column == this.getColumn()) {
-					if(row > this.getRow() && row - this.getRow() == 1) {
-						//this.setRow(row);
+				if(deltaCol == 0) {
+					if(deltaRow == -1 && board.getPieceFromBoard(row, column) == null) {
 						return true;
-					} else {
-						throw new IllegalArgumentException("Invalid move");
-					}
+					} 
+					return false;
 				// check for capture diagonally
-				} else if(column == Math.abs(this.getColumn() - 1) && row > this.getRow() && row == this.getRow() + 1 
+				} else if(column == Math.abs(this.getColumn() - 1) && row > this.getRow() && row == this.getRow() - 1 
 						&& board.getPieceFromBoard(row, column) != null && Color.WHITE == board.getPieceFromBoard(row, column).getColor()) {
-					//GameManager.capture(this.getRow(), this.getColumn(), row, column, board);
 					return true;
 				// check for en passant
-				} else if(row == 1) {
-					
+				} else if(this.getRow() == 5) {
+					if(board.getPieceFromBoard(this.getRow(), this.getColumn() - 1).getType() == Type.PAWN &&
+							board.getPieceFromBoard(this.getRow(), this.getColumn() - 1).getColor() == Color.WHITE) {
+						if(deltaRow == -1 && deltaCol == -1 && board.getPieceFromBoard(row, column) == null) {
+							return true;
+						}
+						return false;
+					}
+					if(board.getPieceFromBoard(this.getRow(), this.getColumn() + 1).getType() == Type.PAWN &&
+							board.getPieceFromBoard(this.getRow(), this.getColumn() + 1).getColor() == Color.BLACK) {
+						if(deltaRow == -1 && deltaCol == 1 && board.getPieceFromBoard(row, column) == null) {
+							return true;
+						}
+						return false;
+					}
+					return false;
 				}
 			}
 		} 
 		return false;
 	}
-	
-	/**
-	 * Provides functionality for a pawn to perform en passant capture on
-	 * another piece. 
-	 */
-	public boolean enPassant() {
-		return false;
-	}
-
 }

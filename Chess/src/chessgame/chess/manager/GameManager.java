@@ -32,6 +32,8 @@ public class GameManager {
 	private Player[] players;
 	/** Index of the current player  */
 	private int currentPlayerIndex;
+	/** Represents coordinates of en passant target */
+	private int[] enPassantTarget = new int[2];
 	
 	/**
 	 * Creates a new GameManger object. 

@@ -56,42 +56,48 @@ public class King extends Piece {
 		else if(Color.WHITE == this.getColor() && !castled && !hasMoved
 				&& !isKingInCheck(this.getRow(), this.getColumn(), board)) {
 			// check for right castling move first
-			Rook tempRook = (Rook) board.getPieceFromBoard(7, 7);
-			Rook tempRook2 = (Rook) board.getPieceFromBoard(7, 0);
-			if(tempRook != null && !tempRook.getHasMoved() && tempRook.getColor() == Color.WHITE  
-					&& board.getPieceFromBoard(7, 5) == null && board.getPieceFromBoard(7, 6) == null 
-					&& !isKingInCheck(7, 5, board) && !isKingInCheck(7, 6, board)
-					&& this.getRow() == row && row == 6) {
-				// call castling function in GameManager
-				return true;
-			} 
-			else if(tempRook2 != null && !tempRook2.getHasMoved() && tempRook2.getColor() == Color.WHITE
-					&& board.getPieceFromBoard(7, 3) == null && board.getPieceFromBoard(7, 2) == null 
-					&& !isKingInCheck(7, 3, board) && !isKingInCheck(7, 2, board) 
-					&& this.getRow() == row && row == 2) {
-				// call castling function in GameManager
-				return true;
+			if(board.getPieceFromBoard(7, 7).getType() == Type.ROOK) {
+				Rook tempRook = (Rook) board.getPieceFromBoard(7, 7);
+				if(tempRook != null && !tempRook.getHasMoved() && tempRook.getColor() == Color.WHITE  
+						&& board.getPieceFromBoard(7, 5) == null && board.getPieceFromBoard(7, 6) == null 
+						&& !isKingInCheck(7, 5, board) && !isKingInCheck(7, 6, board)
+						&& this.getRow() == row && row == 6) {
+					return true;
+				} 
+			}
+			if(board.getPieceFromBoard(7, 0).getType() == Type.ROOK) {
+				Rook tempRook2 = (Rook) board.getPieceFromBoard(7, 0);
+				if(tempRook2 != null && !tempRook2.getHasMoved() && tempRook2.getColor() == Color.WHITE
+						&& board.getPieceFromBoard(7, 3) == null && board.getPieceFromBoard(7, 2) == null 
+						&& !isKingInCheck(7, 3, board) && !isKingInCheck(7, 2, board) 
+						&& this.getRow() == row && row == 2) {
+					return true;
+				}
 			}
 			return false;
 		// check for black's castling moves
 		} else if(Color.BLACK == this.getColor() && !castled && !hasMoved 
 				&& !isKingInCheck(this.getRow(), this.getColumn(), board)) {
 			// check for right castling move first
-			Rook tempRook = (Rook) board.getPieceFromBoard(0, 7);
-			Rook tempRook2 = (Rook) board.getPieceFromBoard(0, 0);
-			if(tempRook != null && !tempRook.getHasMoved() && tempRook.getColor() == Color.BLACK 
-					&& board.getPieceFromBoard(0, 5) == null && board.getPieceFromBoard(0, 6) == null 
-					&& !isKingInCheck(0, 5, board) && !isKingInCheck(0, 6, board) 
-					&& this.getRow() == row && row == 6) {
-				// call castling function in GameManager
-				return true;
-			} 
-			else if(tempRook2 != null && !tempRook2.getHasMoved() && tempRook2.getColor() == Color.BLACK 
-					&& board.getPieceFromBoard(0, 3) == null && board.getPieceFromBoard(0, 2) == null 
-					&& !isKingInCheck(0, 3, board) && !isKingInCheck(0, 2, board) 
-					&& this.getRow() == row && row == 2) {
-				// call castling function in GameManager
-				return true;
+			if(board.getPieceFromBoard(0, 7).getType() == Type.ROOK) {
+				Rook tempRook = (Rook) board.getPieceFromBoard(0, 7);
+				if(tempRook != null && !tempRook.getHasMoved() && tempRook.getColor() == Color.BLACK 
+						&& board.getPieceFromBoard(0, 5) == null && board.getPieceFromBoard(0, 6) == null 
+						&& !isKingInCheck(0, 5, board) && !isKingInCheck(0, 6, board) 
+						&& this.getRow() == row && row == 6) {
+					// call castling function in GameManager
+					return true;
+				} 
+			}
+			if(board.getPieceFromBoard(0, 0).getType() == Type.ROOK) {
+				Rook tempRook2 = (Rook) board.getPieceFromBoard(0, 0);
+				if(tempRook2 != null && !tempRook2.getHasMoved() && tempRook2.getColor() == Color.BLACK 
+						&& board.getPieceFromBoard(0, 3) == null && board.getPieceFromBoard(0, 2) == null 
+						&& !isKingInCheck(0, 3, board) && !isKingInCheck(0, 2, board) 
+						&& this.getRow() == row && row == 2) {
+					// call castling function in GameManager
+					return true;
+				}
 			}
 			return false;
 		} 
