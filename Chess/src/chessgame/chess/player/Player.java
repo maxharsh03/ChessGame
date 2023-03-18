@@ -1,11 +1,3 @@
-/**
- * A better implementation may be that GameManager has an instance of Board so its 
- * easier to get stuff from the board. From there, it can validate moves and look 
- * for checkmates. This information can be passed to a Player which has a list of 
- * Pieces. Look at chatGPT for more info
- */
-
-
 package chessgame.chess.player;
 
 import java.util.ArrayList;
@@ -21,23 +13,17 @@ import chessgame.chess.piece.Piece;
  *
  */
 public class Player {
-	/** 
-	 * 
-	 */
+	/** name of player */
 	private String name;
-	/**
-	 * 
-	 */
+	/** color of player */
     private Color color;
-    /**
-     * 
-     */
+    /** List of pieces that a player has left on the board */
     private ArrayList<Piece> pieces;
-    
+    /** List of pieces that a player that has captured from their opponent */
     private ArrayList<Piece> captured;
 
     /**
-     * 
+     * Constructs a Player object with values for all fields.
      * @param name
      * @param color
      */
@@ -49,7 +35,7 @@ public class Player {
     }
 
     /**
-     * 
+     * Retrieve player's name.
      * @return
      */
     public String getName() {
@@ -57,7 +43,7 @@ public class Player {
     }
     
     /**
-     * 
+     * Retrieve player's color.
      * @return
      */
     public Color getColor() {
@@ -65,27 +51,39 @@ public class Player {
     }
 
     /**
-     * 
+     * Retrieve list of player's pieces.
      * @return
      */
     public ArrayList<Piece> getPieces() {
         return pieces;
     }
+    
+    /**
+     * Retrieve list of pieces a player captured.
+     * @return
+     */
+    public ArrayList<Piece> getCapturedPieces() {
+        return captured;
+    }
 
     /**
-     * 
+     * Add a piece to a player's list of current pieces.
      * @param piece
      */
     public void addPiece(Piece piece) {
         pieces.add(piece);
     }
     
+    /**
+     * Add a piece that a player just captured. 
+     * @param piece
+     */
     public void addCaptured(Piece piece) {
         captured.add(piece);
     }
 
     /**
-     * 
+     * Remove a piece from a player's current list of pieces.
      * @param piece
      */
     public void removePiece(Piece piece) {

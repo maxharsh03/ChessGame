@@ -1,14 +1,15 @@
 package chessgame.chess.manager;
 
-
 import java.util.HashMap;
 
 import chessgame.chess.board.Board;
 import chessgame.chess.piece.Color;
 import chessgame.chess.piece.Piece;
+import chessgame.chess.piece.Queen;
 import chessgame.chess.piece.Rook;
 import chessgame.chess.piece.Type;
 import chessgame.chess.piece.King;
+import chessgame.chess.piece.Pawn;
 import chessgame.chess.player.Player;
 
 /**
@@ -29,7 +30,7 @@ public class GameManager {
 	/** Board object that contains the pieces.  */
 	private Board board;
 	/** Array of the 2 players playing the chess game. */
-	private Player[] players;
+	private Player[] players = new Player[2];
 	/** Index of the current player  */
 	private int currentPlayerIndex;
 	/** Represents coordinates of en passant target */
@@ -122,7 +123,8 @@ public class GameManager {
 			return false;
 		} 
 		
-		// must handle castling moves entirely separately within King class
+		// must handle king moves entirely separately
+		// implementation not entirely correct, must handle event where king can capture a piece
 		if(piece.getType() == Type.KING) {
 			King king = (King) piece;
 			if((rowInitial == 0 && columnInitial == 4 && rowFinal == rowInitial && columnFinal == 2)
@@ -144,9 +146,11 @@ public class GameManager {
 				}
 			} 
 			else {
+				// this should be moved down below to take into account king captures
 				if(piece.isValid(rowFinal, columnFinal, board)) {
 					moveHelper(columnInitial, rowFinal, rowFinal, columnFinal, piece);
 					king.setHasMoved(true);
+					return true;
 				}
 			}
 		}
@@ -191,42 +195,95 @@ public class GameManager {
 				return false;
 			}
 		}
+		
+		// handle possible en passant and pawn promotion here
+		if(piece.getType() == Type.PAWN) {
+			if(getLastPieceMoved() != null && getLastPieceMoved().getType() == Type.PAWN
+					&& getLastPieceMoved().getColor() != getCurrentPlayer().getColor()) {
+				if(getCurrentPlayer().getColor() == Color.WHITE) {
+					if(this.enPassantTarget[0] == piece.getRow() && this.enPassantTarget[1] == piece.getColumn() - 1) {
+						switchPlayer();
+						handleCapture(board.getPieceFromBoard(rowFinal + 1, columnFinal));
+						moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, piece);
+						board.getBoard()[rowFinal + 1][columnFinal] = null;
+						setLastPieceMoved(piece);
+						return true;
+					} 
+					if(this.enPassantTarget[0] == piece.getRow() && this.enPassantTarget[1] == piece.getColumn() + 1) {
+						switchPlayer();
+						handleCapture(board.getPieceFromBoard(rowFinal + 1, columnFinal));
+						moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, piece);
+						board.getBoard()[rowFinal + 1][columnFinal] = null;
+						setLastPieceMoved(piece);
+						return true;
+					}
+				}
+				else {
+					if(this.enPassantTarget[0] == piece.getRow() && this.enPassantTarget[1] == piece.getColumn() - 1) {
+						switchPlayer();
+						handleCapture(board.getPieceFromBoard(rowFinal - 1, columnFinal));
+						moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, piece);
+						board.getBoard()[rowFinal - 1][columnFinal] = null;
+						setLastPieceMoved(piece);
+						return true;
+					} 
+					if(this.enPassantTarget[0] == piece.getRow() && this.enPassantTarget[1] == piece.getColumn() + 1) {
+						switchPlayer();
+						handleCapture(board.getPieceFromBoard(rowFinal - 1, columnFinal));
+						moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, piece);
+						board.getBoard()[rowFinal - 1][columnFinal] = null;
+						setLastPieceMoved(piece);
+						return true;
+					}
+				}
+			} else {
+				
+			}
+		}
+		
 		// make move on board and set last piece moved
-		// also have to set rook to moved if it was moved for castling purposes
 		moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, piece);
-		if(piece.getType() == Type.ROOK) {
-			Rook rook = (Rook) piece;
-			rook.setHasMoved(true);
-		} 
 		setLastPieceMoved(piece);
 		
 		// switch player and handle capture
 		switchPlayer();
+		handleCapture(possibleCapture);
+		
+		if(piece.getType() == Type.ROOK) {
+			Rook rook = (Rook) piece;
+			rook.setHasMoved(true);
+		} 
+		if(piece.getType() == Type.PAWN) {
+			Pawn pawn = (Pawn) piece;
+			if(Math.abs(rowFinal - rowInitial) == 2) {
+				pawn.setFirstMove(true);
+				this.enPassantTarget[0] = pawn.getRow();
+				this.enPassantTarget[1] = pawn.getColumn();
+			// handles pawn promotion, turning pawn into Queen 
+			} else if(getCurrentPlayer().getColor() == Color.WHITE && rowFinal == 0) {
+				board.getBoard()[rowFinal][columnFinal] = new Queen(Color.WHITE, rowFinal, columnFinal);
+			} else if(getCurrentPlayer().getColor() == Color.BLACK && rowFinal == 7) {
+				board.getBoard()[rowFinal][columnFinal] = new Queen(Color.BLACK, rowFinal, columnFinal);
+			} 
+		}
+		
+		return true;
+	}
+	
+	public void handleCapture(Piece possibleCapture) {
 		if(possibleCapture != null) {
 			getCurrentPlayer().removePiece(possibleCapture);
 			players[(currentPlayerIndex + 1) % 2].addCaptured(possibleCapture);
 			updateScore(players[(currentPlayerIndex + 1) % 2], possibleCapture);
 		}
-		
-		// determine if there is a new check or checkmate that has occurred
-		if(isCheck()) {
-			System.out.println(getCurrentPlayer().getColor() + " is in check!");
-		} else if(isCheckmate()) {
-			System.out.println(getCurrentPlayer().getColor() + " is in checkmate!");
-			return false;
-		}
-		return true;
 	}
 	
-	/** 
-	 * Handles functionality when a piece captures another piece 
-	 * @param rowInitial
-	 * @param columnInitial
-	 * @param rowFinal
-	 * @param columnFinal
+	/**
+	 * Retrieve list of players.
+	 * @return
 	 */
-	public void capture(int rowInitial, int columnInitial, int rowFinal, int columnFinal, Piece piece, Board board) {
-		
+	public Player[] getPlayers() {
+		return players;
 	}
 	
 	/**
@@ -281,10 +338,11 @@ public class GameManager {
 	 * @return
 	 */
 	public boolean isCheckmate() {
-		
+		/*
 		if(!isCheck()) {
 			return false;
 		}
+		*/
 		
 		Board boardCopy = (Board) board.clone();
 		Piece[][] piecesCopy = new Piece[8][8];
@@ -321,7 +379,6 @@ public class GameManager {
 			}
 		}
 		return true;
-		
 	}
 	
 	/** 
@@ -387,16 +444,29 @@ public class GameManager {
 		King king = (King) board.getKing(color);
 		
 		// checks if moving a piece will expose a player's king to check
-		for(int i = 0; i < board.getBoard().length; i++) {
-			for(int j = 0; i < board.getBoard()[0].length; j++) {
+		for(int i = 0; i < 8; i++) {
+			for(int j = 0; j < 8; j++) {
 				Piece p = board.getBoard()[i][j];
-				if(p != null && p.getColor() != color) {
+				if(p != null && p.getColor() != color && 
+						p.getType() != Type.KING) {
 					if(p.isValid(king.getRow(), king.getColumn(), board)) {
 						// will return true if the move is valid and results in a check
 						return true;
 					}
 				}
 			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Determines if stalemate has occured (when a player is not in check but also does not have any valid moves).
+	 * @param color
+	 * @return
+	 */
+	public boolean isStalemate(Color color) {
+		if(!isCheck() && isCheckmate()) {
+			return true;
 		}
 		return false;
 	}

@@ -42,7 +42,7 @@ public class Pawn extends Piece {
 			// handle first move
 			if(this.getRow() == 6) {
 				if(deltaCol == 0) {
-					if(deltaRow == 2 && board.getPieceFromBoard(row - 1, column) == null 
+					if(deltaRow == 2 && board.getPieceFromBoard(row + 1, column) == null 
 							&& board.getPieceFromBoard(row, column) == null) {
 						return true;
 					}
@@ -65,19 +65,21 @@ public class Pawn extends Piece {
 					} 
 					return false;
 				// check for capture diagonally
-				} else if(column == Math.abs(this.getColumn() - 1) && row < this.getRow() && row == this.getRow() - 1 
-						&& board.getPieceFromBoard(row, column) != null && Color.BLACK == board.getPieceFromBoard(row, column).getColor()) {
+				} else if(Math.abs(deltaCol) == 1 && deltaRow == 1 && board.getPieceFromBoard(row, column) != null && 
+						Color.BLACK == board.getPieceFromBoard(row, column).getColor()) {
 					return true;
 				// check for en passant
 				} else if(this.getRow() == 3) {
-					if(board.getPieceFromBoard(this.getRow(), this.getColumn() - 1).getType() == Type.PAWN &&
+					if(board.getPieceFromBoard(this.getRow(), this.getColumn() - 1) != null 
+							&& board.getPieceFromBoard(this.getRow(), this.getColumn() - 1).getType() == Type.PAWN &&
 							board.getPieceFromBoard(this.getRow(), this.getColumn() - 1).getColor() == Color.BLACK) {
 						if(deltaRow == 1 && deltaCol == -1 && board.getPieceFromBoard(row, column) == null) {
 							return true;
 						}
 						return false;
 					}
-					if(board.getPieceFromBoard(this.getRow(), this.getColumn() + 1).getType() == Type.PAWN &&
+					if(board.getPieceFromBoard(this.getRow(), this.getColumn() + 1) != null 
+							&& board.getPieceFromBoard(this.getRow(), this.getColumn() + 1).getType() == Type.PAWN &&
 							board.getPieceFromBoard(this.getRow(), this.getColumn() + 1).getColor() == Color.BLACK) {
 						if(deltaRow == 1 && deltaCol == 1 && board.getPieceFromBoard(row, column) == null) {
 							return true;
@@ -91,9 +93,9 @@ public class Pawn extends Piece {
 		// black pawn moves 
 		else if(Color.BLACK == this.getColor()) {
 			// checks for first move
-			if(this.getRow() == 6) {
+			if(this.getRow() == 1) {
 				if(deltaCol == 0) {
-					if(deltaRow == -2 && board.getPieceFromBoard(row + 1, column) == null 
+					if(deltaRow == -2 && board.getPieceFromBoard(row - 1, column) == null 
 							&& board.getPieceFromBoard(row, column) == null) {
 						return true;
 					}
@@ -115,19 +117,21 @@ public class Pawn extends Piece {
 					} 
 					return false;
 				// check for capture diagonally
-				} else if(column == Math.abs(this.getColumn() - 1) && row > this.getRow() && row == this.getRow() - 1 
-						&& board.getPieceFromBoard(row, column) != null && Color.WHITE == board.getPieceFromBoard(row, column).getColor()) {
+				} else if(Math.abs(deltaCol) == 1 && deltaRow == -1 && board.getPieceFromBoard(row, column) != null 
+						&& Color.WHITE == board.getPieceFromBoard(row, column).getColor()) {
 					return true;
 				// check for en passant
-				} else if(this.getRow() == 5) {
-					if(board.getPieceFromBoard(this.getRow(), this.getColumn() - 1).getType() == Type.PAWN &&
+				} else if(this.getRow() == 4) {
+					if(board.getPieceFromBoard(this.getRow(), this.getColumn() - 1) != null 
+							&& board.getPieceFromBoard(this.getRow(), this.getColumn() - 1).getType() == Type.PAWN &&
 							board.getPieceFromBoard(this.getRow(), this.getColumn() - 1).getColor() == Color.WHITE) {
 						if(deltaRow == -1 && deltaCol == -1 && board.getPieceFromBoard(row, column) == null) {
 							return true;
 						}
 						return false;
 					}
-					if(board.getPieceFromBoard(this.getRow(), this.getColumn() + 1).getType() == Type.PAWN &&
+					if(board.getPieceFromBoard(this.getRow(), this.getColumn() + 1) != null 
+							&& board.getPieceFromBoard(this.getRow(), this.getColumn() + 1).getType() == Type.PAWN &&
 							board.getPieceFromBoard(this.getRow(), this.getColumn() + 1).getColor() == Color.BLACK) {
 						if(deltaRow == -1 && deltaCol == 1 && board.getPieceFromBoard(row, column) == null) {
 							return true;
@@ -139,5 +143,33 @@ public class Pawn extends Piece {
 			}
 		} 
 		return false;
+	}
+
+	/**
+	 * @return the firstMove
+	 */
+	public boolean isFirstMove() {
+		return firstMove;
+	}
+
+	/**
+	 * @param firstMove the firstMove to set
+	 */
+	public void setFirstMove(boolean firstMove) {
+		this.firstMove = firstMove;
+	}
+
+	/**
+	 * @return the hasDoneEnPassant
+	 */
+	public boolean getHasDoneEnPassant() {
+		return hasDoneEnPassant;
+	}
+
+	/**
+	 * @param hasDoneEnPassant the hasDoneEnPassant to set
+	 */
+	public void setHasDoneEnPassant(boolean hasDoneEnPassant) {
+		this.hasDoneEnPassant = hasDoneEnPassant;
 	}
 }

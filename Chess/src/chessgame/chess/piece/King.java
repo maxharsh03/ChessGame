@@ -2,7 +2,7 @@ package chessgame.chess.piece;
 
 import chessgame.chess.board.Board;
 
-// DO NOT NEED TO CHECK FOR ANY check or checkmate FUNCTIONALITY IN THIS CLASS, let that be determined by GameManager
+// need to add that a king must have a distance of 1 square from an enemy king at all times
 
 /** 
  * 
@@ -56,21 +56,21 @@ public class King extends Piece {
 		else if(Color.WHITE == this.getColor() && !castled && !hasMoved
 				&& !isKingInCheck(this.getRow(), this.getColumn(), board)) {
 			// check for right castling move first
-			if(board.getPieceFromBoard(7, 7).getType() == Type.ROOK) {
+			if(board.getPieceFromBoard(7, 7) != null && board.getPieceFromBoard(7, 7).getType() == Type.ROOK) {
 				Rook tempRook = (Rook) board.getPieceFromBoard(7, 7);
-				if(tempRook != null && !tempRook.getHasMoved() && tempRook.getColor() == Color.WHITE  
+				if(!tempRook.getHasMoved() && tempRook.getColor() == Color.WHITE  
 						&& board.getPieceFromBoard(7, 5) == null && board.getPieceFromBoard(7, 6) == null 
 						&& !isKingInCheck(7, 5, board) && !isKingInCheck(7, 6, board)
-						&& this.getRow() == row && row == 6) {
+						&& this.getRow() == row && row == 7) {
 					return true;
 				} 
 			}
-			if(board.getPieceFromBoard(7, 0).getType() == Type.ROOK) {
+			if(board.getPieceFromBoard(7, 0) != null && board.getPieceFromBoard(7, 0).getType() == Type.ROOK) {
 				Rook tempRook2 = (Rook) board.getPieceFromBoard(7, 0);
-				if(tempRook2 != null && !tempRook2.getHasMoved() && tempRook2.getColor() == Color.WHITE
+				if(!tempRook2.getHasMoved() && tempRook2.getColor() == Color.WHITE
 						&& board.getPieceFromBoard(7, 3) == null && board.getPieceFromBoard(7, 2) == null 
 						&& !isKingInCheck(7, 3, board) && !isKingInCheck(7, 2, board) 
-						&& this.getRow() == row && row == 2) {
+						&& this.getRow() == row && row == 7) {
 					return true;
 				}
 			}
@@ -79,22 +79,22 @@ public class King extends Piece {
 		} else if(Color.BLACK == this.getColor() && !castled && !hasMoved 
 				&& !isKingInCheck(this.getRow(), this.getColumn(), board)) {
 			// check for right castling move first
-			if(board.getPieceFromBoard(0, 7).getType() == Type.ROOK) {
+			if(board.getPieceFromBoard(0, 7) != null && board.getPieceFromBoard(0, 7).getType() == Type.ROOK) {
 				Rook tempRook = (Rook) board.getPieceFromBoard(0, 7);
-				if(tempRook != null && !tempRook.getHasMoved() && tempRook.getColor() == Color.BLACK 
+				if(!tempRook.getHasMoved() && tempRook.getColor() == Color.BLACK 
 						&& board.getPieceFromBoard(0, 5) == null && board.getPieceFromBoard(0, 6) == null 
 						&& !isKingInCheck(0, 5, board) && !isKingInCheck(0, 6, board) 
-						&& this.getRow() == row && row == 6) {
+						&& this.getRow() == row && row == 0) {
 					// call castling function in GameManager
 					return true;
 				} 
 			}
-			if(board.getPieceFromBoard(0, 0).getType() == Type.ROOK) {
+			if(board.getPieceFromBoard(0, 0) != null && board.getPieceFromBoard(0, 0).getType() == Type.ROOK) {
 				Rook tempRook2 = (Rook) board.getPieceFromBoard(0, 0);
-				if(tempRook2 != null && !tempRook2.getHasMoved() && tempRook2.getColor() == Color.BLACK 
+				if(!tempRook2.getHasMoved() && tempRook2.getColor() == Color.BLACK 
 						&& board.getPieceFromBoard(0, 3) == null && board.getPieceFromBoard(0, 2) == null 
 						&& !isKingInCheck(0, 3, board) && !isKingInCheck(0, 2, board) 
-						&& this.getRow() == row && row == 2) {
+						&& this.getRow() == row && row == 0) {
 					// call castling function in GameManager
 					return true;
 				}
@@ -120,7 +120,8 @@ public class King extends Piece {
 		for(int i = 0; i < 8; i++) {
 			for(int j = 0; j < 8; j++) {
 				Piece piece = board.getPieceFromBoard(i, j);
-				if(piece != null && piece.getColor() != this.getColor()) {
+				if(piece != null && piece.getColor() != this.getColor() &&
+						piece.getType() != Type.KING) {
 					if(piece.isValid(row, column, board)) {
 						return true;
 					}

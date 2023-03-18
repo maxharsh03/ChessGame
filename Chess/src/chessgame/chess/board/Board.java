@@ -1,7 +1,5 @@
 package chessgame.chess.board;
 
-import java.util.ArrayList;
-
 import chessgame.chess.piece.Bishop;
 import chessgame.chess.piece.Color;
 import chessgame.chess.piece.King;
@@ -22,12 +20,12 @@ import chessgame.chess.piece.Type;
  */
 public class Board implements Cloneable {
 
-	//private static Board singleton;
+	/** number of rows on the board */
 	private static final int ROWS = 8;
+	/** number of columns on the board */
 	private static final int COLUMNS = 8;
+	/** 2D array of all the pieces on the board */
 	private Piece[][] pieces;
-	private ArrayList<Piece> whitePieces;
-	private ArrayList<Piece> blackPieces;
 	
 	public Board() {
 		pieces = new Piece[ROWS][COLUMNS];
@@ -119,22 +117,6 @@ public class Board implements Cloneable {
 	}
 	
 	/**
-	 * Retrieve list of all white pieces currently on the board
-	 * @return
-	 */
-	public ArrayList<Piece> getWhitePieces() {
-		return whitePieces;
-	}
-	
-	/**
-	 * Retrieve list of all black pieces currently on the board
-	 * @return
-	 */
-	public ArrayList<Piece> getBlackPieces() {
-		return blackPieces;
-	}
-	
-	/**
 	 * Retrieves king for a given color.
 	 * @param color
 	 * @return
@@ -158,44 +140,24 @@ public class Board implements Cloneable {
 	 */
 	public void createBoard() {
 		// black pieces
-		Piece r1 = new Rook(Color.WHITE, 0, 0);
-		Piece r2 = new Rook(Color.WHITE, 0, 7);
-		Piece n1 = new Knight(Color.WHITE, 0, 1);
-		Piece n2 = new Knight(Color.WHITE, 0, 6);
-		Piece b1 = new Bishop(Color.WHITE, 0, 2);
-		Piece b2 = new Bishop(Color.WHITE, 0, 5);
-		Piece k1 = new King(Color.WHITE, 0, 4);
-		Piece q1 = new Queen(Color.WHITE, 0, 3);
-		
-		// add black pieces to blackPieces list
-		blackPieces.add(r1);
-		blackPieces.add(r2);
-		blackPieces.add(n1);
-		blackPieces.add(n2);
-		blackPieces.add(b1);
-		blackPieces.add(b2);
-		blackPieces.add(k1);
-		blackPieces.add(q1);
+		Piece r1 = new Rook(Color.BLACK, 0, 0);
+		Piece r2 = new Rook(Color.BLACK, 0, 7);
+		Piece n1 = new Knight(Color.BLACK, 0, 1);
+		Piece n2 = new Knight(Color.BLACK, 0, 6);
+		Piece b1 = new Bishop(Color.BLACK, 0, 2);
+		Piece b2 = new Bishop(Color.BLACK, 0, 5);
+		Piece k1 = new King(Color.BLACK, 0, 4);
+		Piece q1 = new Queen(Color.BLACK, 0, 3);
 		
 		// white pieces
-		Piece r3 = new Rook(Color.BLACK, 7, 0);
-		Piece r4 = new Rook(Color.BLACK, 7, 7);
-		Piece n3 = new Knight(Color.BLACK, 7, 1);
-		Piece n4 = new Knight(Color.BLACK, 7, 6);
-		Piece b3 = new Bishop(Color.BLACK, 7, 2);
-		Piece b4 = new Bishop(Color.BLACK, 7, 5);
-		Piece k2 = new King(Color.BLACK, 7, 4);
-		Piece q2 = new Queen(Color.BLACK, 7, 3);
-		
-		// add white pieces to whitePieces list
-		whitePieces.add(r3);
-		whitePieces.add(r4);
-		whitePieces.add(n3);
-		whitePieces.add(n4);
-		whitePieces.add(b3);
-		whitePieces.add(b4);
-		whitePieces.add(k2);
-		whitePieces.add(q2);
+		Piece r3 = new Rook(Color.WHITE, 7, 0);
+		Piece r4 = new Rook(Color.WHITE, 7, 7);
+		Piece n3 = new Knight(Color.WHITE, 7, 1);
+		Piece n4 = new Knight(Color.WHITE, 7, 6);
+		Piece b3 = new Bishop(Color.WHITE, 7, 2);
+		Piece b4 = new Bishop(Color.WHITE, 7, 5);
+		Piece k2 = new King(Color.WHITE, 7, 4);
+		Piece q2 = new Queen(Color.WHITE, 7, 3);
 		
 		// create pieces in top 1st row
 		pieces[0][0] = r1;
@@ -221,8 +183,6 @@ public class Board implements Cloneable {
 		for(int i = 0; i < 8; i++) {
 			Pawn p = new Pawn(Color.BLACK, 1, i);
 			pieces[1][i] = p;
-			// add black pawns to blackPieces list
-			blackPieces.add(p);
 		}
 		
 		// fill in empty squares as null
@@ -236,23 +196,6 @@ public class Board implements Cloneable {
 		for(int i = 0; i < 8; i++) {
 			Pawn p = new Pawn(Color.WHITE, 6, i);
 			pieces[6][i] = p;
-			// add white pawns to whitePieces list
-			whitePieces.add(p);
 		}
-		
-		// add white pieces to whitePieces list
-		for(int i = 0; i < 2; i++) {
-			for(int j = 0; j < 8; j++) {
-				whitePieces.add(pieces[i][j]);
-			}
-		}
-		
-		// add black pieces to blackPieces list
-		for(int i = 6; i < 8; i++) {
-			for(int j = 0; j < 8; j++) {
-				blackPieces.add(pieces[i][j]);
-			}
-		}
-		
 	}
 }
