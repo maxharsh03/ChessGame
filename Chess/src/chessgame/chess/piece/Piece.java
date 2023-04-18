@@ -1,5 +1,8 @@
 package chessgame.chess.piece;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import chessgame.chess.board.Board;
 
 /**
@@ -16,6 +19,7 @@ public abstract class Piece {
 	private int row;
 	private int column;
 	private Type type;
+	private Map<Piece, String> map;
 	
 	public Piece(Type type, Color color, int row, int column) {
 		setName(name);
@@ -23,6 +27,8 @@ public abstract class Piece {
 		setRow(row);
 		setColumn(column);
 		setType(type);
+		map = new HashMap<Piece, String>();
+		initMap();
 	}
 
 	/**
@@ -30,6 +36,45 @@ public abstract class Piece {
 	 * have a different implementation of this method. 
 	 */
 	public abstract boolean isValid(int row, int column, Board board);
+	
+	/**
+	 * fills map with pieces matched to their image file
+	 */
+	public void initMap() {
+		if(this.getColor() == Color.WHITE) {
+			if(this.getType() == Type.PAWN) {
+				map.put(this, "images.cburnett/wp.png");
+			} else if(this.getType() == Type.ROOK) {
+				map.put(this, "images.cburnett/wR.png");
+			} else if(this.getType() == Type.BISHOP) {
+				map.put(this, "images.cburnett/wB.png");
+			} else if(this.getType() == Type.KNIGHT) {
+				map.put(this, "images.cburnett/wN.png");
+			} else if(this.getType() == Type.QUEEN) {
+				map.put(this, "images.cburnett/wQ.png");
+			} else if(this.getType() == Type.ROOK) {
+				map.put(this, "images.cburnett/wR.png");
+			} else if(this.getType() == Type.KING) {
+				map.put(this, "images.cburnett/wK.png");
+			}
+		} else {
+			if(this.getType() == Type.PAWN) {
+				map.put(this, "images.cburnett/bp.png");
+			} else if(this.getType() == Type.ROOK) {
+				map.put(this, "images.cburnett/bR.png");
+			} else if(this.getType() == Type.BISHOP) {
+				map.put(this, "images.cburnett/bB.png");
+			} else if(this.getType() == Type.KNIGHT) {
+				map.put(this, "images.cburnett/bN.png");
+			} else if(this.getType() == Type.QUEEN) {
+				map.put(this, "images.cburnett/bQ.png");
+			} else if(this.getType() == Type.ROOK) {
+				map.put(this, "images.cburnett/bR.png");
+			} else if(this.getType() == Type.KING) {
+				map.put(this, "images.cburnett/bK.png");
+			}
+		}
+	}
 	
 	/**
 	 * @return the color
@@ -99,5 +144,9 @@ public abstract class Piece {
 			throw new IllegalArgumentException("Invalid move");
 		}
 		this.column = column;
+	}
+	
+	public String getImage() {
+		return map.get(this);
 	}
 }

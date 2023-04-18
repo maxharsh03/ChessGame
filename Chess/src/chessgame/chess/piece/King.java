@@ -39,7 +39,7 @@ public class King extends Piece {
 		if((rowDiff == 0 && columnDiff != 1) || (columnDiff == 0 && rowDiff != 1) || (rowDiff != 1 && columnDiff != 1)) {
 			return false;
 		}
-		return isKingInCheck(row, column, board);
+		return !isKingInCheck(row, column, board);
 	}
 	
 	/** 

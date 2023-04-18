@@ -2,135 +2,125 @@ package chessgame.chess.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.Point;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
-import javax.swing.ImageIcon;
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 
+import chessgame.chess.board.Board;
+import chessgame.chess.manager.GameManager;
 import chessgame.chess.piece.Piece;
 
-public class ChessGUI extends JFrame {
+import java.awt.color.*;
+
+public class ChessGUI{
 
     private static final long serialVersionUID = 1L;
-	private final List<Piece> pieces = new ArrayList<Piece>();
-    private JPanel ChessBoard;
-    private Piece selectedPiece;
-    private Point selectedPoint;
+    private GameManager gm = new GameManager();
+    private JFrame frame;
+    private BoardPanel boardPanel;
 
     public ChessGUI() {
-        setTitle("Chess Game");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        // Create the board panel
-        ChessBoard = new JPanel(new GridLayout(8, 8));
-        ChessBoard.setSize(400, 400);
-        add(ChessBoard, BorderLayout.CENTER);
-
-        // Add the squares to the board
-        for (int y = 0; y < 8; y++) {
-            for (int x = 0; x < 8; x++) {
-                JLabel square = new JLabel();
-                square.setOpaque(true);
-                square.setHorizontalAlignment(SwingConstants.CENTER);
-                square.setVerticalAlignment(SwingConstants.CENTER);
-                square.setBackground((x + y) % 2 == 0 ? Color.WHITE : Color.GRAY);
-                square.addMouseListener(new SquareMouseListener(x, y));
-                ChessBoard.add(square);
-            }
-        }
-
-        // Add the pieces to the board
-        addPiece(new Rook(0, 0, Player.WHITE));
-        addPiece(new Knight(1, 0, Player.WHITE));
-        addPiece(new Bishop(2, 0, Player.WHITE));
-        addPiece(new Queen(3, 0, Player.WHITE));
-        addPiece(new King(4, 0, Player.WHITE));
-        addPiece(new Bishop(5, 0, Player.WHITE));
-        addPiece(new Knight(6, 0, Player.WHITE));
-        addPiece(new Rook(7, 0, Player.WHITE));
-        for (int i = 0; i < 8; i++) {
-            addPiece(new Pawn(i, 1, Player.WHITE));
-        }
-        addPiece(new Rook(0, 7, Player.BLACK));
-        addPiece(new Knight(1, 7, Player.BLACK));
-        addPiece(new Bishop(2, 7, Player.BLACK));
-        addPiece(new Queen(3, 7, Player.BLACK));
-        addPiece(new King(4, 7, Player.BLACK));
-        addPiece(new Bishop(5, 7, Player.BLACK));
-        addPiece(new Knight(6, 7, Player.BLACK));
-        addPiece(new Rook(7, 7, Player.BLACK));
-        for (int i = 0; i < 8; i++) {
-            addPiece(new Pawn(i, 6, Player.BLACK));
-        }
-
-        pack();
-        setLocationRelativeTo(null);
-        setVisible(true);
+        this.frame = new JFrame("Chess") ;
+        this.frame.setLayout(new BorderLayout());
+        JMenuBar tableMenuBar = createTableMenuBar();
+        this.boardPanel = new BoardPanel();
+        
+        this.frame.setJMenuBar(tableMenuBar);
+        this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.frame.setSize(600, 600);
+        this.frame.add(this.boardPanel, BorderLayout.CENTER);
+        this.frame.setVisible(true);
+    }
+   
+    private JMenuBar createTableMenuBar() {
+    	JMenuBar tableMenuBar = new JMenuBar();
+    	tableMenuBar.add(createFileMenu());
+    	return tableMenuBar;
     }
 
-    private void addPiece(Piece piece) {
-        pieces.add(piece);
-        ImageIcon icon = new ImageIcon(piece.getImage());
-        JLabel label = new JLabel(icon, SwingConstants.CENTER);
-        label.addMouseListener(new PieceMouseListener(piece));
-        board.add(label, piece.getX() + piece.getY() * 8);
+    private JMenu createFileMenu() {
+		JMenu fileMenu = new JMenu("File");
+		JMenuItem openPGN = new JMenuItem("Load PGN File");
+		openPGN.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("Bjdsfj");
+			}
+		});
+		fileMenu.add(openPGN);
+		
+		JMenuItem exitMenuItem = new JMenuItem("Exit");
+		exitMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
+			}
+		});
+		
+		return fileMenu;
+	}
+    
+    private class BoardPanel extends JPanel {
+    	ArrayList<TilePanel> boardTiles;
+    	
+    	public BoardPanel() {
+    		super(new GridLayout(8, 8));
+    		this.boardTiles = new ArrayList<TilePanel>();
+    		for(int i = 0; i < 8; i++) {
+    			for(int j = 0; j < 8; j++) {
+    				TilePanel tilePanel = new TilePanel(this, i + j, gm.getBoard().getPieceFromBoard(i, j));
+    				this.boardTiles.add(tilePanel);
+    				add(tilePanel);
+    			}
+    		}
+    		setPreferredSize(new Dimension(10, 10));
+    		validate();
+    	}
+    }
+    
+    private class TilePanel extends JPanel {
+    	private int tileId;
+    	private Piece piece;
+    	
+    	public TilePanel(BoardPanel boardPanel, int tileId, Piece piece) {
+    		super(new GridBagLayout());
+    		this.tileId = tileId;
+    		this.piece = piece;
+    		setPreferredSize(new Dimension(10, 10));
+    		assignTileColor();
+    		assignImage();
+    		validate();
+    	}
+
+		private void assignTileColor() {
+			boolean isLight = ((this.tileId) % 2) == 0;
+			setBackground(isLight ?  Color.white : Color.gray);
+		}
+		
+		private void assignImage() { 
+			if(this.piece != null) {
+				try {
+					BufferedImage image = ImageIO.read(new File(piece.getImage()));
+				} catch (IOException e) {
+					throw new IllegalArgumentException();
+				}
+			}
+		}
     }
 
-    private void movePiece(Piece piece, Point point) {
-        piece.move(point.x, point.y);
-        board.remove(piece.getX() + piece.getY() * 8);
-        board.add(new JLabel(new ImageIcon(piece.getImage()), SwingConstants.CENTER),
-                piece.getX() + piece.getY() * 8);
-        board.validate();
-        board.repaint();
-    }
 
-    private class SquareMouseListener extends MouseAdapter {
-        private final int x;
-        private final int y;
-
-        public SquareMouseListener(int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if (selectedPiece != null) {
-                movePiece(selectedPiece, new Point(x, y));
-                selectedPiece = null;
-            }
-        }
-    }
-
-    private class PieceMouseListener extends MouseAdapter {
-        private final Piece piece;
-
-        public PieceMouseListener(Piece piece) {
-            this.piece = piece;
-        }
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            if (selectedPiece == null) {
-                selectedPiece = piece;
-                selectedPoint = new Point(piece.getX(), piece.getY());
-            } else {
-                movePiece(selectedPiece, selectedPoint);
-                selectedPiece = null;
-            }
-        }
-    }
-
-    public static void main(String[] args) {
+	public static void main(String[] args) {
         new ChessGUI();
     }
-
+}

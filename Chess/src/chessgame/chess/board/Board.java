@@ -198,4 +198,18 @@ public class Board implements Cloneable {
 			pieces[6][i] = p;
 		}
 	}
+	
+	public static void main(String[]args) {
+		/*
+		Board board = new Board();
+		for(int i = 0; i < 8; i++) {
+			for(int j = 0; j < 8; j++) {
+				Piece piece = board.getPieceFromBoard(i, j);
+				if(piece != null ) {
+					System.out.println(piece.getImage() + "," + i + "," + j);
+				}
+			}
+		}
+		*/
+	}
 }

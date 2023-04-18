@@ -133,6 +133,7 @@ public class GameManager {
 					leftCastle(piece.getColor(), board);
 					king.setCastled(true);
 					king.setHasMoved(true);
+					switchPlayer();
 					return true;
 				}
 			} 
@@ -142,14 +143,17 @@ public class GameManager {
 					rightCastle(piece.getColor(), board);
 					king.setCastled(true);
 					king.setHasMoved(true);
+					switchPlayer();
 					return true;
 				}
 			} 
 			else {
 				// this should be moved down below to take into account king captures
 				if(piece.isValid(rowFinal, columnFinal, board)) {
-					moveHelper(columnInitial, rowFinal, rowFinal, columnFinal, piece);
+					moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, piece);
 					king.setHasMoved(true);
+					switchPlayer();
+					handleCapture(possibleCapture);
 					return true;
 				}
 			}
@@ -295,9 +299,13 @@ public class GameManager {
 		if(color == Color.WHITE) {
 			moveHelper(7, 7, 7, 5, board.getPieceFromBoard(7, 7));			
 			moveHelper(7, 4, 7, 6, board.getPieceFromBoard(7, 4));
+			Rook rook = (Rook) board.getPieceFromBoard(7, 5);
+			rook.setHasMoved(true);
 		} else {
 			moveHelper(0, 7, 0, 5, board.getPieceFromBoard(0, 7));
 			moveHelper(0, 4, 0, 6, board.getPieceFromBoard(0, 4));
+			Rook rook = (Rook) board.getPieceFromBoard(0, 5);
+			rook.setHasMoved(true);
 		}
 	}
 	
@@ -310,9 +318,13 @@ public class GameManager {
 		if(color == Color.WHITE) {
 			moveHelper(7, 0, 7, 3, board.getPieceFromBoard(7, 0));
 			moveHelper(7, 4, 7, 2, board.getPieceFromBoard(7, 4));
+			Rook rook = (Rook) board.getPieceFromBoard(7, 3);
+			rook.setHasMoved(true);
 		} else {
 			moveHelper(0, 0, 0, 3, board.getPieceFromBoard(0, 0));
 			moveHelper(0, 4, 0, 2, board.getPieceFromBoard(0, 4));
+			Rook rook = (Rook) board.getPieceFromBoard(0, 3);
+			rook.setHasMoved(true);
 		}
 	}
 	
