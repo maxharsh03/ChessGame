@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -13,7 +14,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -59,7 +62,6 @@ public class ChessGUI{
 				System.out.println("Bjdsfj");
 			}
 		});
-		fileMenu.add(openPGN);
 		
 		JMenuItem exitMenuItem = new JMenuItem("Exit");
 		exitMenuItem.addActionListener(new ActionListener() {
@@ -67,6 +69,16 @@ public class ChessGUI{
 				System.exit(0);
 			}
 		});
+		
+		JMenuItem saveGameToFile = new JMenuItem("Save Game to File");
+		saveGameToFile.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("Save");
+			}
+		});
+		fileMenu.add(openPGN);
+		fileMenu.add(exitMenuItem);
+		fileMenu.add(saveGameToFile);
 		
 		return fileMenu;
 	}
@@ -112,6 +124,7 @@ public class ChessGUI{
 			if(this.piece != null) {
 				try {
 					BufferedImage image = ImageIO.read(new File(piece.getImage()));
+					add(new JLabel(new ImageIcon(image.getScaledInstance(75, 75, Image.SCALE_DEFAULT))));
 				} catch (IOException e) {
 					throw new IllegalArgumentException();
 				}

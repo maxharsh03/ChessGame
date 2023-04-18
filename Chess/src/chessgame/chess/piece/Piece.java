@@ -43,35 +43,31 @@ public abstract class Piece {
 	public void initMap() {
 		if(this.getColor() == Color.WHITE) {
 			if(this.getType() == Type.PAWN) {
-				map.put(this, "images.cburnett/wp.png");
-			} else if(this.getType() == Type.ROOK) {
-				map.put(this, "images.cburnett/wR.png");
+				map.put(this, "resources/white-pawn.png");
 			} else if(this.getType() == Type.BISHOP) {
-				map.put(this, "images.cburnett/wB.png");
+				map.put(this, "resources/white-bishop.png");
 			} else if(this.getType() == Type.KNIGHT) {
-				map.put(this, "images.cburnett/wN.png");
+				map.put(this, "resources/white-knight.png");
 			} else if(this.getType() == Type.QUEEN) {
-				map.put(this, "images.cburnett/wQ.png");
+				map.put(this, "resources/white-queen.png");
 			} else if(this.getType() == Type.ROOK) {
-				map.put(this, "images.cburnett/wR.png");
+				map.put(this, "resources/white-rook.png");
 			} else if(this.getType() == Type.KING) {
-				map.put(this, "images.cburnett/wK.png");
+				map.put(this, "resources/white-king.png");
 			}
 		} else {
 			if(this.getType() == Type.PAWN) {
-				map.put(this, "images.cburnett/bp.png");
-			} else if(this.getType() == Type.ROOK) {
-				map.put(this, "images.cburnett/bR.png");
+				map.put(this, "resources/black-pawn.png");
 			} else if(this.getType() == Type.BISHOP) {
-				map.put(this, "images.cburnett/bB.png");
+				map.put(this, "resources/black-bishop.png");
 			} else if(this.getType() == Type.KNIGHT) {
-				map.put(this, "images.cburnett/bN.png");
+				map.put(this, "resources/black-knight.png");
 			} else if(this.getType() == Type.QUEEN) {
-				map.put(this, "images.cburnett/bQ.png");
+				map.put(this, "resources/black-queen.png");
 			} else if(this.getType() == Type.ROOK) {
-				map.put(this, "images.cburnett/bR.png");
+				map.put(this, "resources/black-rook.png");
 			} else if(this.getType() == Type.KING) {
-				map.put(this, "images.cburnett/bK.png");
+				map.put(this, "resources/black-king.png");
 			}
 		}
 	}
