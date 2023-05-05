@@ -1,5 +1,4 @@
 package chessgame.chess.ui;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -15,7 +14,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-
+import java.util.Arrays;
+import java.util.Collections;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -25,11 +25,19 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-
 import chessgame.chess.board.Board;
 import chessgame.chess.manager.GameManager;
-import chessgame.chess.piece.Piece;
 
+/**
+ * ChessGUI is the Graphical User Interface for the Chess Game. This class 
+ * is the View part of the Model View Controller Design Pattern (MVC). It 
+ * contains functionality to create a playable Chess Board and allow users to 
+ * interact with it against a computer player. It has a move log, displays 
+ * captured pieces, allows players to save their game to a file, load a game from 
+ * file, and flip the board orientation. 
+ * @author maxharsh
+ *
+ */
 public class ChessGUI{
 
     private static final long serialVersionUID = 1L;
@@ -46,17 +54,21 @@ public class ChessGUI{
     
     private Point initialClick;
     private Point finalClick;
-    private Piece pieceToMove;
+    private BoardDirection boardDirection;
+    private ArrayList<Integer[]> listAllValidMoves;
 
+    /**
+     * 
+     */
     public ChessGUI() {
         this.frame = new JFrame("Chess") ;
         this.frame.setLayout(new BorderLayout());
         JMenuBar tableMenuBar = createTableMenuBar();
         this.boardPanel = new BoardPanel();
         this.boardPanel.setLocation(0, 0);
-        
-        //this.frame.setLocation(0, 0);
         this.frame.setJMenuBar(tableMenuBar);
+        this.listAllValidMoves = null;
+        this.boardDirection = BoardDirection.NORMAL;
         this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.frame.setPreferredSize(FRAME_DIMENSION);
         this.frame.add(this.boardPanel, BorderLayout.CENTER);
@@ -64,12 +76,21 @@ public class ChessGUI{
         this.frame.setVisible(true);
     }
    
+    /**
+     * 
+     * @return
+     */
     private JMenuBar createTableMenuBar() {
     	JMenuBar tableMenuBar = new JMenuBar();
     	tableMenuBar.add(createFileMenu());
+    	tableMenuBar.add(createPreferencesMenu());
     	return tableMenuBar;
     }
 
+    /**
+     * 
+     * @return
+     */
     private JMenu createFileMenu() {
 		JMenu fileMenu = new JMenu("File");
 		JMenuItem openPGN = new JMenuItem("Load PGN File");
@@ -99,6 +120,58 @@ public class ChessGUI{
 		return fileMenu;
 	}
     
+    /**
+     * 
+     * @return
+     */
+    public JMenu createPreferencesMenu() {
+    	JMenu preferencesMenu = new JMenu("Preferences");
+    	JMenuItem flipBoardItem = new JMenuItem("Flip Board");
+    	flipBoardItem.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				boardDirection = boardDirection.opposite();
+				boardPanel.drawBoard();
+			}
+    	});
+    	preferencesMenu.add(flipBoardItem);
+    	return preferencesMenu;
+    }
+    
+    /**
+     * 
+     * @author maxharsh
+     *
+     */
+    public enum BoardDirection {
+    	
+    	NORMAL {
+    		ArrayList<TilePanel> traverse(ArrayList<TilePanel> boardTiles) {
+    			return boardTiles;
+    		}
+    		BoardDirection opposite() {
+    			return FLIPPED;
+    		}
+    	}, FLIPPED {
+    		ArrayList<TilePanel> traverse(ArrayList<TilePanel> boardTiles) {
+    			Collections.reverse(boardTiles);
+    			return boardTiles;
+    		}
+    		BoardDirection opposite() {
+    			return NORMAL;
+    		}
+    	};
+    	
+    	abstract ArrayList<TilePanel> traverse(ArrayList<TilePanel> boardTiles);
+    	abstract BoardDirection opposite();
+    }
+    
+    /**
+     * 
+     * @author maxharsh
+     *
+     */
     private class BoardPanel extends JPanel {
     	ArrayList<TilePanel> boardTiles;
     	
@@ -117,7 +190,7 @@ public class ChessGUI{
     	
     	public void drawBoard() {
     		removeAll();
-    		for(TilePanel tilePanel : boardTiles) {
+    		for(TilePanel tilePanel : boardDirection.traverse(boardTiles)) {
     			tilePanel.drawTile();
     			add(tilePanel);
     		}
@@ -126,6 +199,11 @@ public class ChessGUI{
     	}
     }
     
+    /**
+     * 
+     * @author maxharsh
+     *
+     */
     private class TilePanel extends JPanel {
     	private int tileId;
     	private int row;
@@ -143,23 +221,27 @@ public class ChessGUI{
     		addMouseListener(new MouseListener() {
     			
 				@Override
-				public void mouseClicked(MouseEvent e) {
+				public void mouseReleased(MouseEvent e) {
+					listAllValidMoves = gm.getListAllValidMoves(board, board.getPieceFromBoard(row, col));
+					
+					if(board.getPieceFromBoard(row, col) != null) {
+						for(int i = 0; i < listAllValidMoves.size(); i++) {
+							System.out.println(Arrays.toString(listAllValidMoves.get(i)));
+						}
+					}
+					
 					// cancels piece selection
 					if(SwingUtilities.isRightMouseButton(e)) {
 						initialClick = null;
 						finalClick = null;
-						System.out.println(row + "," + col);
 					} 
-					// cancels piece selection
+					// allows player to move piece 
 					else if(SwingUtilities.isLeftMouseButton(e)) {
 						if(initialClick == null) {
 							initialClick = new Point(row, col);
 						} else {
 							finalClick = new Point(row, col);
 							// after a valid move, reset the final and initial clicks
-							System.out.println("Initial Click: " + initialClick.getX() + "," + initialClick.getY());
-							System.out.println("Final Click: " + finalClick.getX() + "," + finalClick.getY());
-
 							if(gm.makeMove((int)initialClick.getX(), (int)initialClick.getY(), (int)finalClick.getX(), (int)finalClick.getY())) {
 								initialClick = null;
 								finalClick = null;
@@ -187,7 +269,7 @@ public class ChessGUI{
 				}
 
 				@Override
-				public void mouseReleased(MouseEvent e) {
+				public void mouseClicked(MouseEvent e) {
 					// TODO Auto-generated method stub
 					
 				}
@@ -212,6 +294,7 @@ public class ChessGUI{
     		removeAll();
     		assignTileColor();
     		assignImage();
+    		//highlightLegalMoves();
     		validate();
     		repaint();
     	}
@@ -219,6 +302,23 @@ public class ChessGUI{
 		private void assignTileColor() {
 			boolean isLight = ((this.tileId) % 2) == 0;
 			setBackground(isLight ?  new Color(64, 47, 29) : new Color(210, 180, 140));
+		}
+		
+		private void highlightLegalMoves() {
+			int[] tile = new int[] {row, col};
+			
+			if(listAllValidMoves != null) {
+				for(int i = 0; i < listAllValidMoves.size(); i++) {
+					if(listAllValidMoves.get(i)[0] == row && listAllValidMoves.get(i)[1] == col) {
+						try {
+							add(new JLabel(new ImageIcon(ImageIO.read(new File("resources/green_dot.png")))));
+						} catch(Exception e) {
+							// skip
+						}
+					}
+					break;
+				}
+			}
 		}
 		
 		private void assignImage() { 
@@ -232,7 +332,6 @@ public class ChessGUI{
 			}
 		}
     }
-
 
 	public static void main(String[] args) {
         new ChessGUI();

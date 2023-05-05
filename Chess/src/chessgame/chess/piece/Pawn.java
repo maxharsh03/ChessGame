@@ -105,7 +105,7 @@ public class Pawn extends Piece {
 					return false;
 				}
 				if(deltaRow == -1 && (deltaCol == 1 || deltaCol == -1) && board.getPieceFromBoard(row, column) != null
-						&& board.getPieceFromBoard(row, column).getColor() != Color.WHITE) {
+						&& board.getPieceFromBoard(row, column).getColor() != Color.BLACK) {
 					return true;
 				} else {
 					return false;

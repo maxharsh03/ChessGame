@@ -244,6 +244,15 @@ class GameManagerTest {
 		System.out.println();
 	}
 	
+	@Test 
+	void testKingMove() {
+		GameManager gm = new GameManager();
+
+		assertTrue(gm.makeMove(6, 4, 4, 4));
+		assertTrue(gm.makeMove(0, 1, 2, 0));
+		assertFalse(gm.makeMove(7, 4, 1, 5));
+	}
+	
 	@Test
 	void testHandleCapture() {
 		fail("Not yet implemented");

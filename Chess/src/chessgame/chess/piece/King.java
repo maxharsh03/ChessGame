@@ -36,7 +36,8 @@ public class King extends Piece {
 			return true;
 		}
 		
-		if((rowDiff == 0 && columnDiff != 1) || (columnDiff == 0 && rowDiff != 1) || (rowDiff != 1 && columnDiff != 1)) {
+		if((rowDiff == 0 && columnDiff > 1) || (columnDiff == 0 && rowDiff > 1) || (rowDiff > 1 && columnDiff > 1) 
+				|| (rowDiff == 1 && columnDiff > 1) || (columnDiff == 1 && rowDiff > 1)) {
 			return false;
 		}
 		return !isKingInCheck(row, column, board);
@@ -102,11 +103,6 @@ public class King extends Piece {
 			return false;
 		} 
 		return false;
-		/*else if((rowDiff == 0 && columnDiff != 1) || (columnDiff == 0 && rowDiff != 1) || (rowDiff/columnDiff != 1)) {
-			return false;
-		}
-		return isKingInCheck(row, column, board, this);
-		*/
 	}
 	
 	/** 

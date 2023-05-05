@@ -1,5 +1,6 @@
 package chessgame.chess.manager;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import chessgame.chess.board.Board;
@@ -26,7 +27,7 @@ public class GameManager {
 	/** Maps each starting coordinate to its ending coordinate for all valid moves. For generating AI moves 
 	 * primarily.
 	 */
-	public HashMap<Integer[], Integer[]> listAllValidMoves;
+	public ArrayList<Integer[]> listAllValidMoves;
 	/** Board object that contains the pieces.  */
 	private Board board;
 	/** Array of the 2 players playing the chess game. */
@@ -40,7 +41,7 @@ public class GameManager {
 	 * Creates a new GameManger object. 
 	 */
 	public GameManager() {
-		listAllValidMoves = new HashMap<Integer[], Integer[]>();
+		listAllValidMoves = new ArrayList<Integer[]>();
 		lastPieceMoved = null;
 		board = new Board();
 		players[0] = new Player("Player 1", Color.WHITE);	
@@ -123,6 +124,11 @@ public class GameManager {
 			return false;
 		} 
 		
+		// checks that player does not try to capture piece of same color
+		if(possibleCapture != null && possibleCapture.getColor() == piece.getColor()) {
+			return false;
+		}
+		
 		// must handle king moves entirely separately
 		// implementation not entirely correct, must handle event where king can capture a piece
 		if(piece.getType() == Type.KING) {
@@ -157,11 +163,6 @@ public class GameManager {
 					return true;
 				}
 			}
-		}
-				
-		// checks that player does not try to capture piece of same color
-		if(possibleCapture != null && possibleCapture.getColor() == piece.getColor()) {
-			return false;
 		}
 		
 		// checks that the player made a valid move for the piece type 
@@ -484,10 +485,28 @@ public class GameManager {
 	}
 	
 	/**
-	 * Retrieve list of valid moves for a piece.
-	 * @return the listAllValidMoves
+	 * Return all valid moves for a particular piece. Returns an ArrayList filled with 
+	 * positions of valid move for a piece.
+	 * @param listAllValidMoves the listAllValidMoves to set
 	 */
-	public HashMap<Integer[], Integer[]> getListAllValidMoves() {
+	public ArrayList<Integer[]> getListAllValidMoves(Board board, Piece piece) {
+		resetListAllValidMoves();
+		
+		if(piece == null) {
+			return null;
+		}
+		
+		// must also verify isKingInCheck for each move
+		int initRow = piece.getRow();
+		int initColumn = piece.getColumn();
+		for(int i = 0; i < 8; i++) {
+			for(int j = 0; j < 8; j++) {
+				//if(makeMove(piece.getRow(), piece.getColumn(), i, j)) {
+				if(piece.isValid(i, j, board) && !isKingInCheck(getCurrentPlayer().getColor(), board)) {
+					listAllValidMoves.add(new Integer[] {i, j});
+				}
+			}
+		}
 		return listAllValidMoves;
 	}
 	
@@ -497,26 +516,4 @@ public class GameManager {
 	public void resetListAllValidMoves() {
 		listAllValidMoves.clear();
 	}
-
-	/**
-	 * Return all valid moves for a particular piece. Maps a piece's starting position to 
-	 * each valid ending position. 
-	 * @param listAllValidMoves the listAllValidMoves to set
-	 */
-	/*
-	public void setListAllValidMoves(Board board, Piece piece) {
-		// must also verify isKingInCheck for each move
-		int initRow = piece.getRow();
-		int initColumn = piece.getColumn();
-		for(int i = 0; i < 8; i++) {
-			for(int j = 0; j < 8; j++) {
-				if((i != initRow && j != initColumn) && piece.isValid(i, j, board) && 
-						!isKingInCheck(board.getKing(piece.getColor()), i, j, piece, board)) {
-					listAllValidMoves.put(new Integer[] {initRow, initColumn}, new Integer[] {i, j});
-				}
-			}
-		}
-	}
-	*/
-
 }
