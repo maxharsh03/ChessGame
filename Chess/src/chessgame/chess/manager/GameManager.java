@@ -22,11 +22,7 @@ import chessgame.chess.player.Player;
  */
 public class GameManager {
 
-	/** Represents the Piece that was last moved on the board */
-	public Piece lastPieceMoved;
-	/** Maps each starting coordinate to its ending coordinate for all valid moves. For generating AI moves 
-	 * primarily.
-	 */
+	/** List of all valid moves in coordinate form (y, x) */
 	public ArrayList<Integer[]> listAllValidMoves;
 	/** Board object that contains the pieces.  */
 	private Board board;
@@ -35,15 +31,18 @@ public class GameManager {
 	/** Index of the current player  */
 	private int currentPlayerIndex;
 	/** Represents coordinates of en passant target */
-	private int[] enPassantTarget = new int[2];
+	private Piece enPassantTarget;
+	/** allows GameManager to move pieces */
+	private Move move;
 	
 	/**
 	 * Creates a new GameManger object. 
 	 */
 	public GameManager() {
 		listAllValidMoves = new ArrayList<Integer[]>();
-		lastPieceMoved = null;
 		board = new Board();
+		move = new Move();
+		enPassantTarget = null;
 		players[0] = new Player("Player 1", Color.WHITE);	
 		players[1] = new Player("Player 2", Color.BLACK);
 		currentPlayerIndex = 0;
@@ -104,7 +103,7 @@ public class GameManager {
 	 * @param columnFinal
 	 * @param board
 	 */
-	public boolean makeMove(int rowInitial, int columnInitial, int rowFinal, int columnFinal) {
+	public boolean canMove(int rowInitial, int columnInitial, int rowFinal, int columnFinal) {
 		// check if starting or ending position are out of bounds
 		if(rowInitial < 0 || rowInitial > 7 || columnInitial < 0 || columnInitial > 7 || rowFinal < 0
 				|| rowFinal > 7 || columnFinal < 0 || columnFinal > 7) {
@@ -136,33 +135,22 @@ public class GameManager {
 			if((rowInitial == 0 && columnInitial == 4 && rowFinal == rowInitial && columnFinal == 2)
 					|| (rowInitial == 7 && columnInitial == 4 && rowFinal == rowInitial && columnFinal == 2)) {
 				if(piece.isValid(rowFinal, columnFinal, board)) {
-					leftCastle(piece.getColor(), board);
-					king.setCastled(true);
-					king.setHasMoved(true);
-					switchPlayer();
 					return true;
 				}
 			} 
 			else if((rowInitial == 0 && columnInitial == 4 && rowFinal == rowInitial && columnFinal == 6)
 					|| (rowInitial == 7 && columnInitial == 4 && rowFinal == rowInitial && columnFinal == 6)) {
 				if(piece.isValid(rowFinal, columnFinal, board)) {
-					rightCastle(piece.getColor(), board);
-					king.setCastled(true);
-					king.setHasMoved(true);
-					switchPlayer();
 					return true;
 				}
 			} 
+			/*
 			else {
-				// this should be moved down below to take into account king captures
 				if(piece.isValid(rowFinal, columnFinal, board)) {
-					moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, piece);
-					king.setHasMoved(true);
-					switchPlayer();
-					handleCapture(possibleCapture);
 					return true;
 				}
 			}
+			*/
 		}
 		
 		// checks that the player made a valid move for the piece type 
@@ -170,117 +158,55 @@ public class GameManager {
 			return false;
 		}
 		
-		// create copy of board to verify check and checkmate 
-		Board boardCopy = (Board) board.clone();
-		Piece[][] piecesCopy = new Piece[8][8];
 		
-		// make a deep copy of the new pieces array 
-		for(int i = 0; i < board.getBoard().length; i++) {
-			for(int j = 0; j < board.getBoard()[0].length; j++) {
-				//boardCopy.setPieceAt(i, j, board.getPieceFromBoard(row, column));
-				if(board.getPieceFromBoard(i, j) != null) {
-					piecesCopy[i][j] = board.getPieceFromBoard(i, j);
-				}
-			}
-		}
-		
-		// now do move on cloned pieces array
-		piecesCopy[rowFinal][columnFinal] = piece;
-		piecesCopy[piece.getRow()][piece.getColumn()] = null;
+		// moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, board, piece);
 		
 		//checks that king is not currently in check
 		if(!isKingInCheck(piece.getColor(), board)) {
+			moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, board, piece);
 			// after the mock move, we need to ensure that the king is not exposed to a check
-			if(isKingInCheck(piece.getColor(), boardCopy)) {
+			if(isKingInCheck(piece.getColor(), board)) {
+				moveHelper(rowFinal, columnFinal, rowInitial, columnInitial, board, piece);
+				board.getBoard()[rowFinal][columnFinal] = possibleCapture;
 				return false;
 			}
 		// if player is in check, we have to see if the move will get the player out of check
 		} else {
-			if(isKingInCheck(piece.getColor(), boardCopy)) {
+			moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, board, piece);
+			if(isKingInCheck(piece.getColor(), board)) {
+				moveHelper(rowFinal, columnFinal, rowInitial, columnInitial, board, piece);
+				board.getBoard()[rowFinal][columnFinal] = possibleCapture;
 				return false;
 			}
 		}
+		moveHelper(rowFinal, columnFinal, rowInitial, columnInitial, board, piece);
+		board.getBoard()[rowFinal][columnFinal] = possibleCapture;
 		
-		// handle possible en passant and pawn promotion here
-		if(piece.getType() == Type.PAWN) {
-			if(getLastPieceMoved() != null && getLastPieceMoved().getType() == Type.PAWN
-					&& getLastPieceMoved().getColor() != getCurrentPlayer().getColor()) {
-				if(getCurrentPlayer().getColor() == Color.WHITE) {
-					if(this.enPassantTarget[0] == piece.getRow() && this.enPassantTarget[1] == piece.getColumn() - 1) {
-						switchPlayer();
-						handleCapture(board.getPieceFromBoard(rowFinal + 1, columnFinal));
-						moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, piece);
-						board.getBoard()[rowFinal + 1][columnFinal] = null;
-						setLastPieceMoved(piece);
-						return true;
-					} 
-					if(this.enPassantTarget[0] == piece.getRow() && this.enPassantTarget[1] == piece.getColumn() + 1) {
-						switchPlayer();
-						handleCapture(board.getPieceFromBoard(rowFinal + 1, columnFinal));
-						moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, piece);
-						board.getBoard()[rowFinal + 1][columnFinal] = null;
-						setLastPieceMoved(piece);
-						return true;
-					}
-				}
-				else {
-					if(this.enPassantTarget[0] == piece.getRow() && this.enPassantTarget[1] == piece.getColumn() - 1) {
-						switchPlayer();
-						handleCapture(board.getPieceFromBoard(rowFinal - 1, columnFinal));
-						moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, piece);
-						board.getBoard()[rowFinal - 1][columnFinal] = null;
-						setLastPieceMoved(piece);
-						return true;
-					} 
-					if(this.enPassantTarget[0] == piece.getRow() && this.enPassantTarget[1] == piece.getColumn() + 1) {
-						switchPlayer();
-						handleCapture(board.getPieceFromBoard(rowFinal - 1, columnFinal));
-						moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, piece);
-						board.getBoard()[rowFinal - 1][columnFinal] = null;
-						setLastPieceMoved(piece);
-						return true;
-					}
-				}
-			} else {
-				
+		// handle possible en passant
+		if(piece.getType() == Type.PAWN && enPassantTarget != null 
+				&& board.getPieceFromBoard(rowFinal, columnFinal) == null) {
+			if(getCurrentPlayer().getColor() == Color.WHITE && rowInitial == 3) {
+				if(enPassantTarget.getRow() == piece.getRow() && enPassantTarget.getColumn() == columnFinal) {
+					return true;
+				} 
+			} else if(getCurrentPlayer().getColor() == Color.BLACK && rowInitial == 4) {
+				if(enPassantTarget.getRow() == piece.getRow() && enPassantTarget.getColumn() == columnFinal) {
+					return true;
+				} 
 			}
 		}
-		
-		// make move on board and set last piece moved
-		moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, piece);
-		setLastPieceMoved(piece);
-		
-		// switch player and handle capture
-		switchPlayer();
-		handleCapture(possibleCapture);
-		
-		if(piece.getType() == Type.ROOK) {
-			Rook rook = (Rook) piece;
-			rook.setHasMoved(true);
-		} 
-		if(piece.getType() == Type.PAWN) {
-			Pawn pawn = (Pawn) piece;
-			if(Math.abs(rowFinal - rowInitial) == 2) {
-				pawn.setFirstMove(true);
-				this.enPassantTarget[0] = pawn.getRow();
-				this.enPassantTarget[1] = pawn.getColumn();
-			// handles pawn promotion, turning pawn into Queen 
-			} else if(getCurrentPlayer().getColor() == Color.WHITE && rowFinal == 0) {
-				board.getBoard()[rowFinal][columnFinal] = new Queen(Color.WHITE, rowFinal, columnFinal);
-			} else if(getCurrentPlayer().getColor() == Color.BLACK && rowFinal == 7) {
-				board.getBoard()[rowFinal][columnFinal] = new Queen(Color.BLACK, rowFinal, columnFinal);
-			} 
-		}
-		
 		return true;
 	}
 	
-	public void handleCapture(Piece possibleCapture) {
-		if(possibleCapture != null) {
-			getCurrentPlayer().removePiece(possibleCapture);
-			players[(currentPlayerIndex + 1) % 2].addCaptured(possibleCapture);
-			updateScore(players[(currentPlayerIndex + 1) % 2], possibleCapture);
-		}
+	public void makeMove(int rowInitial, int columnInitial, int rowFinal, int columnFinal, Board board, Piece piece) {
+		move.movePiece(rowInitial, columnInitial, rowFinal, columnFinal, board, piece);
+	}
+	
+	public void moveHelper(int rowInitial, int columnInitial, int rowFinal, int columnFinal, Board board, Piece piece) {
+		board.getBoard()[rowFinal][columnFinal] = piece;
+		board.getPieceFromBoard(rowFinal, columnFinal).setRow(rowFinal);
+		board.getPieceFromBoard(rowFinal, columnFinal).setColumn(columnFinal);
+		board.getBoard()[rowInitial][columnInitial] = null;
 	}
 	
 	/**
@@ -292,58 +218,12 @@ public class GameManager {
 	}
 	
 	/**
-	 * Handles whenever a king is castling to the right.
-	 * @param color
-	 * @param board
-	 */
-	public void rightCastle(Color color, Board board) {
-		if(color == Color.WHITE) {
-			moveHelper(7, 7, 7, 5, board.getPieceFromBoard(7, 7));			
-			moveHelper(7, 4, 7, 6, board.getPieceFromBoard(7, 4));
-			Rook rook = (Rook) board.getPieceFromBoard(7, 5);
-			rook.setHasMoved(true);
-		} else {
-			moveHelper(0, 7, 0, 5, board.getPieceFromBoard(0, 7));
-			moveHelper(0, 4, 0, 6, board.getPieceFromBoard(0, 4));
-			Rook rook = (Rook) board.getPieceFromBoard(0, 5);
-			rook.setHasMoved(true);
-		}
-	}
-	
-	/**
-	 * Handles whenever a king is castling to the left.
-	 * @param color
-	 * @param board
-	 */
-	public void leftCastle(Color color, Board board) {
-		if(color == Color.WHITE) {
-			moveHelper(7, 0, 7, 3, board.getPieceFromBoard(7, 0));
-			moveHelper(7, 4, 7, 2, board.getPieceFromBoard(7, 4));
-			Rook rook = (Rook) board.getPieceFromBoard(7, 3);
-			rook.setHasMoved(true);
-		} else {
-			moveHelper(0, 0, 0, 3, board.getPieceFromBoard(0, 0));
-			moveHelper(0, 4, 0, 2, board.getPieceFromBoard(0, 4));
-			Rook rook = (Rook) board.getPieceFromBoard(0, 3);
-			rook.setHasMoved(true);
-		}
-	}
-	
-	public void moveHelper(int rowInitial, int columnInitial, int rowFinal, int columnFinal, Piece piece) {
-		board.getBoard()[rowFinal][columnFinal] = piece;
-		board.getPieceFromBoard(rowFinal, columnFinal).setRow(rowFinal);
-		board.getPieceFromBoard(rowFinal, columnFinal).setColumn(columnFinal);
-		board.getBoard()[rowInitial][columnInitial] = null;
-	}
-	
-	/**
 	 * Determines if king for a given player is currently in check.
 	 * @return
 	 */
 	
 	public boolean isCheck() {
-		King king = (King) board.getKing(getCurrentPlayer().getColor());
-		return king.isKingInCheck(king.getRow(), king.getColumn(), board);
+		return isKingInCheck(getCurrentPlayer().getColor(), board);
 	}
 	
 	/** 
@@ -351,41 +231,21 @@ public class GameManager {
 	 * @return
 	 */
 	public boolean isCheckmate() {
-		/*
 		if(!isCheck()) {
 			return false;
 		}
-		*/
 		
-		Board boardCopy = (Board) board.clone();
-		Piece[][] piecesCopy = new Piece[8][8];
-		
-		for(int i = 0; i < 8; i++) {
-			for(int j = 0; j < 8; j++) {
-				Piece piece = board.getPieceFromBoard(i, j);
-				if(piece != null) {
-					piecesCopy[i][j] = piece;
-				}
-			}
-		}
-		
+		// loop through every piece on the board
 		for(int startRow = 0; startRow < 8; startRow++) {
 			for(int startCol = 0; startCol < 8; startCol++) {
 				Piece piece = board.getPieceFromBoard(startRow, startCol);
 				if(piece != null && piece.getColor() == getCurrentPlayer().getColor()) {
+					// check every position to see if making the move can get the king out of check
 					for(int endRow = 0; endRow < 8; endRow++) {
 						for(int endCol = 0; endCol < 8; endCol++) {
-							Piece captured = board.getPieceFromBoard(endRow, endCol);
-							if(piece.isValid(endRow, startRow, boardCopy));
-							piecesCopy[endRow][endCol] = piece;
-							piecesCopy[startRow][startCol] = null;
-							
-							if(!isKingInCheck(getCurrentPlayer().getColor(), boardCopy)) {
+							if(canMove(startRow, startCol, endRow, endCol)) {
 								return false;
 							}
-							// if not checkmate reset boardCopy to original position
-							piecesCopy[startRow][startCol] = piece;
-							piecesCopy[endRow][endCol] = captured;
 						}
 					}
 				}
@@ -428,22 +288,6 @@ public class GameManager {
 	}
 
 	/**
-	 * Retrieve last piece moved. 
-	 * @return the lastPieceMoved
-	 */
-	public Piece getLastPieceMoved() {
-		return lastPieceMoved;
-	}
-
-	/**
-	 * Set last
-	 * @param lastPieceMoved the lastPieceMoved to set
-	 */
-	public void setLastPieceMoved(Piece lastPieceMoved) {
-		this.lastPieceMoved = lastPieceMoved;
-	}
-
-	/**
 	 * Determines if a player's king is in check at the current position. 
 	 * @param king
 	 * @param moveRow
@@ -454,12 +298,12 @@ public class GameManager {
 	 */
 	public boolean isKingInCheck(Color color, Board board) {
 	
-		King king = (King) board.getKing(color);
+		King king = (King) board.getKing(color); 
 		
 		// checks if moving a piece will expose a player's king to check
 		for(int i = 0; i < 8; i++) {
 			for(int j = 0; j < 8; j++) {
-				Piece p = board.getBoard()[i][j];
+				Piece p = board.getPieceFromBoard(i, j);
 				if(p != null && p.getColor() != color && 
 						p.getType() != Type.KING) {
 					if(p.isValid(king.getRow(), king.getColumn(), board)) {
@@ -477,9 +321,22 @@ public class GameManager {
 	 * @param color
 	 * @return
 	 */
-	public boolean isStalemate(Color color) {
-		if(!isCheck() && isCheckmate()) {
-			return true;
+	public boolean isStalemate() {
+		if(!isCheck()) {
+			for(int startRow = 0; startRow < 8; startRow++) {
+				for(int startCol = 0; startCol < 8; startCol++) {
+					Piece piece = board.getPieceFromBoard(startRow, startCol);
+					if(piece != null && piece.getColor() == getCurrentPlayer().getColor()) {
+						for(int endRow = 0; endRow < 8; endRow++) {
+							for(int endCol = 0; endCol < 8; endCol++) {
+								if(canMove(startRow, startCol, endRow, endCol)) {
+									return true;
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 		return false;
 	}
@@ -493,7 +350,7 @@ public class GameManager {
 		resetListAllValidMoves();
 		
 		if(piece == null) {
-			return null;
+			return listAllValidMoves;
 		}
 		
 		// must also verify isKingInCheck for each move
@@ -501,8 +358,7 @@ public class GameManager {
 		int initColumn = piece.getColumn();
 		for(int i = 0; i < 8; i++) {
 			for(int j = 0; j < 8; j++) {
-				//if(makeMove(piece.getRow(), piece.getColumn(), i, j)) {
-				if(piece.isValid(i, j, board) && !isKingInCheck(getCurrentPlayer().getColor(), board)) {
+				if(canMove(piece.getRow(), piece.getColumn(), i, j)) {
 					listAllValidMoves.add(new Integer[] {i, j});
 				}
 			}
@@ -515,5 +371,138 @@ public class GameManager {
 	 */
 	public void resetListAllValidMoves() {
 		listAllValidMoves.clear();
+	}
+	
+	/**
+	 * Move is the inner class of GameManager. Move will do the heavy weight of moving pieces across the board, including 
+	 * special cases like en passant, castling, and pawn promotions. Move also handles the capturing of pieces and updating 
+	 * these changes in the Player class. 
+	 * @author maxharsh
+	 *
+	 */
+	private class Move {
+		public void movePiece(int rowInitial, int columnInitial, int rowFinal, int columnFinal, Board board, Piece piece) {
+			Piece possibleCapture = board.getPieceFromBoard(rowFinal, columnFinal);
+
+			if(piece.getType() == Type.KING) {
+				enPassantTarget = null;
+				King king = (King) piece;
+				// handle left castle scenario 
+				if((rowInitial == 0 && columnInitial == 4 && rowFinal == rowInitial && columnFinal == 2)
+						|| (rowInitial == 7 && columnInitial == 4 && rowFinal == rowInitial && columnFinal == 2)) {
+					leftCastle(piece.getColor(), board);
+					king.setCastled(true);
+					king.setHasMoved(true);
+					switchPlayer();
+				// handle right castle scenario 
+				} else if((rowInitial == 0 && columnInitial == 4 && rowFinal == rowInitial && columnFinal == 6)
+						|| (rowInitial == 7 && columnInitial == 4 && rowFinal == rowInitial && columnFinal == 6)) {
+					rightCastle(piece.getColor(), board);
+					king.setCastled(true);
+					king.setHasMoved(true);
+					switchPlayer();
+				} else {
+					moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, board, piece);
+					switchPlayer();
+					handleCapture(possibleCapture);
+					king.setHasMoved(true);
+				}
+			} else if(piece.getType() == Type.PAWN) {
+				// if enPassantTarget not null, that means we can enPassant
+				if(enPassantTarget != null && enPassantTarget.getColumn() == columnFinal 
+						&& enPassantTarget.getRow() == rowInitial) {
+						enPassantMove(rowInitial, columnInitial, rowFinal, columnFinal, board);
+						enPassantTarget = null;
+				} else {
+					if(Math.abs(rowFinal - rowInitial) == 2 && (rowInitial == 1 || rowInitial == 6)) {
+						enPassantTarget = piece;
+						moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, board, piece);
+						switchPlayer();
+					// handles pawn promotion, turning pawn into Queen 
+					} else if(getCurrentPlayer().getColor() == Color.WHITE && rowFinal == 0) {
+						board.getBoard()[rowFinal][columnFinal] = new Queen(Color.WHITE, rowFinal, columnFinal);
+						board.getBoard()[rowInitial][columnInitial] = null;
+						enPassantTarget = null;
+						switchPlayer();
+					} else if(getCurrentPlayer().getColor() == Color.BLACK && rowFinal == 7) {
+						board.getBoard()[rowFinal][columnFinal] = new Queen(Color.BLACK, rowFinal, columnFinal);
+						board.getBoard()[rowInitial][columnInitial] = null;
+						enPassantTarget = null;
+						switchPlayer();
+					} else {
+						moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, board, piece);
+						switchPlayer();
+						handleCapture(possibleCapture);
+						enPassantTarget = null;
+					}
+				}
+				
+			} else if(piece.getType() == Type.ROOK) {
+				Rook rook = (Rook) piece;
+				rook.setHasMoved(true);
+				moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, board, piece);
+				switchPlayer();
+				handleCapture(possibleCapture);
+				enPassantTarget = null;
+			} else {
+				moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, board, piece);
+				switchPlayer();
+				handleCapture(possibleCapture);
+				enPassantTarget = null;
+			}			
+		}
+		
+		/**
+		 * Handles whenever a king is castling to the left.
+		 * @param color
+		 * @param board
+		 */
+		public void leftCastle(Color color, Board board) {
+			if(color == Color.WHITE) {
+				moveHelper(7, 0, 7, 3, board, board.getPieceFromBoard(7, 0));
+				moveHelper(7, 4, 7, 2, board, board.getPieceFromBoard(7, 4));
+				Rook rook = (Rook) board.getPieceFromBoard(7, 3);
+				rook.setHasMoved(true);
+			} else {
+				moveHelper(0, 0, 0, 3, board, board.getPieceFromBoard(0, 0));
+				moveHelper(0, 4, 0, 2, board, board.getPieceFromBoard(0, 4));
+				Rook rook = (Rook) board.getPieceFromBoard(0, 3);
+				rook.setHasMoved(true);
+			}
+		}
+		
+		/**
+		 * Handles whenever a king is castling to the right.
+		 * @param color
+		 * @param board
+		 */
+		public void rightCastle(Color color, Board board) {
+			if(color == Color.WHITE) {
+				moveHelper(7, 7, 7, 5, board, board.getPieceFromBoard(7, 7));			
+				moveHelper(7, 4, 7, 6, board, board.getPieceFromBoard(7, 4));
+				Rook rook = (Rook) board.getPieceFromBoard(7, 5);
+				rook.setHasMoved(true);
+			} else {
+				moveHelper(0, 7, 0, 5, board, board.getPieceFromBoard(0, 7));
+				moveHelper(0, 4, 0, 6, board, board.getPieceFromBoard(0, 4));
+				Rook rook = (Rook) board.getPieceFromBoard(0, 5);
+				rook.setHasMoved(true);
+			}
+		}
+		
+		public void enPassantMove(int rowInitial, int columnInitial, int rowFinal, int columnFinal, Board board) {
+			switchPlayer();
+			handleCapture(board.getPieceFromBoard(rowInitial, columnFinal));
+			moveHelper(rowInitial, columnInitial, rowFinal, columnFinal, board, board.getPieceFromBoard(rowInitial, columnInitial));
+			board.getBoard()[rowInitial][columnFinal] = null;
+		}
+		
+		public void handleCapture(Piece possibleCapture) {
+			if(possibleCapture != null) {
+				getCurrentPlayer().removePiece(possibleCapture);
+				players[(currentPlayerIndex + 1) % 2].addCaptured(possibleCapture);
+				updateScore(players[(currentPlayerIndex + 1) % 2], possibleCapture);
+			}
+		}
 	}
 }

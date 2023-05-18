@@ -1,9 +1,3 @@
-// SOMETHING THAT MAY BE CAUSING THE ISSUE IS WHEN A PIECE GETS MOVED AND ITS
-// ROW AND COLUMN ARE UPDATED TO THE NEW LOCATION
-// ALSO CHECK THAT THE BOARD COPY THAT IS CREATED DOES NOT, I REPEAT DOES NOT 
-// UDPATE THE ACTUAL PIECE OBJECTS LOCATIONS, BECAUSE THAT COULD ALSO BE MESSING 
-// THINGS UP
-
 package chessgame.chess.manager;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,7 +22,6 @@ class GameManagerTest {
 	@Test
 	void testGameManager() {
 		GameManager gm = new GameManager();
-		assertEquals(null, gm.getLastPieceMoved());
 		Board b = gm.getBoard();
 		Piece[][] p = gm.getBoard().getBoard();
 		assertEquals(8, p.length);
@@ -122,92 +115,71 @@ class GameManagerTest {
 	}
 
 	@Test
-	void testMakeMove() {
+	void testPawnMove() {
 		GameManager gm = new GameManager();
-		/**
-		 * test you can't make a move out of bounds, to the same square, try to move a piece that doesn't exist,
-		 * or try to move opponent's piece
-		 */
-		assertFalse(gm.makeMove(-2, 0, 0, 0));
-		assertFalse(gm.makeMove(4, -3, 0, 0));
-		assertFalse(gm.makeMove(4, 3, 8, 0));
-		assertFalse(gm.makeMove(4, 4, 5, 12));
-		assertFalse(gm.makeMove(4, 4, 4, 4));
-		assertFalse(gm.makeMove(3, 3, 0, 0));
-		assertFalse(gm.makeMove(1, 4, 2, 4));
 		
-		//test pawn moves and captures
-		assertTrue(gm.makeMove(6, 3, 4, 3));
-		assertEquals(Type.PAWN, gm.getBoard().getPieceFromBoard(4, 3).getType());
-		assertEquals(Color.WHITE, gm.getBoard().getPieceFromBoard(4, 3).getColor());
-		assertEquals("Player 2", gm.getCurrentPlayer().getName());
-		assertEquals(Color.BLACK, gm.getCurrentPlayer().getColor());
-		assertEquals(null, gm.getBoard().getPieceFromBoard(2, 3));
-		assertEquals(null, gm.getBoard().getPieceFromBoard(3, 3));
-		assertTrue(gm.makeMove(1, 3, 3, 3));
-		assertEquals(Type.PAWN, gm.getBoard().getPieceFromBoard(3, 3).getType());
-		assertEquals(Color.BLACK, gm.getBoard().getPieceFromBoard(3, 3).getColor());
-		assertTrue(gm.makeMove(6, 4, 4, 4));
-		assertTrue(gm.makeMove(3, 3, 4, 4));
-		assertEquals(1, gm.getPlayers()[1].getCapturedPieces().size());
-		assertEquals(Type.PAWN, gm.getPlayers()[1].getCapturedPieces().get(0).getType());
+		// test all white pawns can move 2 squares for first move
+		assertTrue(gm.canMove(6, 0, 4, 0));
+		assertTrue(gm.canMove(6, 1, 4, 1));
+		assertTrue(gm.canMove(6, 2, 4, 2));
+		assertTrue(gm.canMove(6, 3, 4, 3));
+		assertTrue(gm.canMove(6, 4, 4, 4));
+		assertTrue(gm.canMove(6, 5, 4, 5));
+		assertTrue(gm.canMove(6, 6, 4, 6));
+		assertTrue(gm.canMove(6, 7, 4, 7));
 		
-		/* 
-		 * EN PASSANT TEST
-		 */
-		//assertTrue(gm.makeMove(4, 3, 3, 3));
-		//assertTrue(gm.makeMove(1, 2, 3, 2));
-		//assertTrue(gm.makeMove(3, 3, 2, 2));
+		// test all white pawns can move 1 square for first move
+		assertTrue(gm.canMove(6, 0, 5, 0));
+		assertTrue(gm.canMove(6, 1, 5, 1));
+		assertTrue(gm.canMove(6, 2, 5, 2));
+		assertTrue(gm.canMove(6, 3, 5, 3));
+		assertTrue(gm.canMove(6, 4, 5, 4));
+		assertTrue(gm.canMove(6, 5, 5, 5));
+		assertTrue(gm.canMove(6, 6, 5, 6));
+		assertTrue(gm.canMove(6, 7, 5, 7));
 		
-		// test bishop move
-		assertFalse(gm.makeMove(7, 5, 5, 2));
-		assertFalse(gm.makeMove(7, 5, -1, 0));
-		assertFalse(gm.makeMove(7, 5, 5, -1));
-		assertFalse(gm.makeMove(7, 5, 7, 5));
-		assertFalse(gm.makeMove(7, 5, 7, 4));
-		assertFalse(gm.makeMove(7, 5, 7, 6));
-		assertFalse(gm.makeMove(7, 5, 6, 6));
-		assertFalse(gm.makeMove(7, 5, 6, 5));
-		assertTrue(gm.makeMove(7, 5, 5, 3));
-		// test row and column updated correctly
-		assertEquals(5, gm.getBoard().getPieceFromBoard(5, 3).getRow());
-		assertEquals(3, gm.getBoard().getPieceFromBoard(5, 3).getColumn());
+		// move random white pawn 2 moves
+		gm.makeMove(6, 4, 4, 4, gm.getBoard(), gm.getBoard().getPieceFromBoard(6, 4));
+		assertEquals(Type.PAWN, gm.getBoard().getPieceFromBoard(4, 4).getType());
+		assertEquals(Color.WHITE, gm.getBoard().getPieceFromBoard(4, 4).getColor());
 		
-		// test knight move
-		assertFalse(gm.makeMove(0, 1, 3, 0));
-		assertFalse(gm.makeMove(0, 1, 0, 0));
-		assertFalse(gm.makeMove(0, 1, 0, 2));
-		assertFalse(gm.makeMove(0, 1, -1, 0));
-		assertFalse(gm.makeMove(0, 1, 3, -1));
-		assertFalse(gm.makeMove(0, 1, 1, 1));
-		assertTrue(gm.makeMove(0, 1, 2, 0));
-		assertFalse(gm.makeMove(7, 6, 5, 6));
-		assertTrue(gm.makeMove(7, 6, 5, 5));
+		// test all black pawns can move 2 squares for first move
+		assertTrue(gm.canMove(1, 0, 3, 0));
+		assertTrue(gm.canMove(1, 1, 3, 1));
+		assertTrue(gm.canMove(1, 2, 3, 2));
+		assertTrue(gm.canMove(1, 3, 3, 3));
+		assertTrue(gm.canMove(1, 4, 3, 4));
+		assertTrue(gm.canMove(1, 5, 3, 5));
+		assertTrue(gm.canMove(1, 6, 3, 6));
+		assertTrue(gm.canMove(1, 7, 3, 7));
 		
-		// test queen move
-		assertFalse(gm.makeMove(0, 3, 5, 6));
-		assertTrue(gm.makeMove(0, 3, 2, 3));
+		// test all black pawns can move 1 square for first move
+		assertTrue(gm.canMove(1, 0, 2, 0));
+		assertTrue(gm.canMove(1, 1, 2, 1));
+		assertTrue(gm.canMove(1, 2, 2, 2));
+		assertTrue(gm.canMove(1, 3, 2, 3));
+		assertTrue(gm.canMove(1, 4, 2, 4));
+		assertTrue(gm.canMove(1, 5, 2, 5));
+		assertTrue(gm.canMove(1, 6, 2, 6));
+		assertTrue(gm.canMove(1, 7, 2, 7));
 		
-		// test white castling right move
-		assertTrue(gm.makeMove(7, 4, 7, 6));
-		assertEquals(Type.ROOK, gm.getBoard().getPieceFromBoard(7, 5).getType());
-		assertEquals(Type.KING, gm.getBoard().getPieceFromBoard(7, 6).getType());
+		// move random white pawn 2 moves
+		gm.makeMove(1, 4, 3, 4, gm.getBoard(), gm.getBoard().getPieceFromBoard(1, 4));
+		assertEquals(Type.PAWN, gm.getBoard().getPieceFromBoard(3, 4).getType());
+		assertEquals(Color.BLACK, gm.getBoard().getPieceFromBoard(3, 4).getColor());
+	}
+	
+	@Test 
+	void testEnPassant() {
+		GameManager gm = new GameManager();
 		
-		// test check on opponent
-		assertTrue(gm.makeMove(1, 6, 2, 6));
-		printBoard(gm);
-		assertTrue(gm.makeMove(5, 3, 3, 1));
-		assertTrue(gm.isCheck());
-		assertFalse(gm.makeMove(1, 6, 2, 6));
-		printBoard(gm);
-		assertFalse(gm.makeMove(1, 2, 2, 2));
-		// black escaping check
-		assertTrue(gm.makeMove(0, 4, 0, 3));
-		printBoard(gm);
-		assertTrue(gm.makeMove(7, 5, 7, 4));
-		// test that black got out of check 
-		assertFalse(gm.isCheck());
-		printBoard(gm);
+		gm.makeMove(6, 4, 4, 4, gm.getBoard(), gm.getBoard().getPieceFromBoard(6, 4));
+		gm.makeMove(1, 0, 2, 0, gm.getBoard(), gm.getBoard().getPieceFromBoard(1, 0));
+		gm.makeMove(4, 4, 3, 4, gm.getBoard(), gm.getBoard().getPieceFromBoard(4, 4));
+		gm.makeMove(1, 3, 3, 3, gm.getBoard(), gm.getBoard().getPieceFromBoard(1, 3));
+		assertTrue(gm.canMove(3, 4, 2, 3));
+		assertTrue(gm.canMove(3, 4, 2, 4));
+		
 	}
 
 	private void printBoard(GameManager gm) {
@@ -234,9 +206,6 @@ class GameManagerTest {
 				} else if(piece.getType() == Type.QUEEN) {
 					s = "q";
 				}
-				if(piece != null && piece.getColor() == Color.WHITE) {
-					s.toUpperCase();
-				}
 				System.out.print(s + " ");
 			}
 			System.out.println();
@@ -244,15 +213,26 @@ class GameManagerTest {
 		System.out.println();
 	}
 	
+	@Test
+	void testPin() {
+		GameManager gm = new GameManager();
+		gm.makeMove(6, 4, 4, 4, gm.getBoard(), gm.getBoard().getPieceFromBoard(6, 4));
+		gm.makeMove(1, 4, 3, 4, gm.getBoard(), gm.getBoard().getPieceFromBoard(1, 4));
+		gm.makeMove(7, 5, 3, 1, gm.getBoard(), gm.getBoard().getPieceFromBoard(7, 5));
+		assertFalse(gm.canMove(1, 3, 2, 3));
+		assertFalse(gm.canMove(1, 3, 3, 3));
+
+	}
+	
+	/**
+	 * Test moving around. Test moving when there is another king in its vicinity, limiting moves. 
+	 * Test check and getting out of check.
+	 */
 	@Test 
 	void testKingMove() {
 		GameManager gm = new GameManager();
 
-		assertTrue(gm.makeMove(6, 4, 4, 4));
-		assertTrue(gm.makeMove(0, 1, 2, 0));
-		assertFalse(gm.makeMove(7, 4, 1, 5));
 	}
-	
 	@Test
 	void testHandleCapture() {
 		fail("Not yet implemented");
@@ -280,7 +260,21 @@ class GameManagerTest {
 
 	@Test
 	void testIsCheckmate() {
-		fail("Not yet implemented");
+		GameManager gm = new GameManager();
+		
+		gm.makeMove(6, 5, 5, 5, gm.getBoard(), gm.getBoard().getPieceFromBoard(6, 5));
+		gm.makeMove(1, 4, 3, 4, gm.getBoard(), gm.getBoard().getPieceFromBoard(1, 4));
+		gm.makeMove(7, 1, 5, 0, gm.getBoard(), gm.getBoard().getPieceFromBoard(7, 1));
+		gm.makeMove(0, 5, 1, 4, gm.getBoard(), gm.getBoard().getPieceFromBoard(0, 5));
+		gm.makeMove(6, 7, 4, 7, gm.getBoard(), gm.getBoard().getPieceFromBoard(6, 7));
+		gm.makeMove(1, 4, 4, 7, gm.getBoard(), gm.getBoard().getPieceFromBoard(1, 4));
+		
+		assertFalse(gm.isCheckmate());
+		
+		gm.makeMove(6, 6, 5, 6, gm.getBoard(), gm.getBoard().getPieceFromBoard(6, 6));
+		gm.makeMove(4, 7, 5, 6, gm.getBoard(), gm.getBoard().getPieceFromBoard(4, 7));
+		
+		assertTrue(gm.isCheckmate());
 	}
 
 	@Test

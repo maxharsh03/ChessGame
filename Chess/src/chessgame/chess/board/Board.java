@@ -56,10 +56,6 @@ public class Board implements Cloneable {
 	    }
 	}
 	
-	public void setPieceAt(int row, int column, Piece piece) {
-		pieces[row][column] = piece;
-	}
-	
 	/** 
 	 * Checks if a straight line path (horizontal/vertical) between 2 
 	 * squares on the board is clear 
@@ -197,19 +193,5 @@ public class Board implements Cloneable {
 			Pawn p = new Pawn(Color.WHITE, 6, i);
 			pieces[6][i] = p;
 		}
-	}
-	
-	public static void main(String[]args) {
-		/*
-		Board board = new Board();
-		for(int i = 0; i < 8; i++) {
-			for(int j = 0; j < 8; j++) {
-				Piece piece = board.getPieceFromBoard(i, j);
-				if(piece != null ) {
-					System.out.println(piece.getImage() + "," + i + "," + j);
-				}
-			}
-		}
-		*/
 	}
 }

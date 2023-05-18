@@ -18,11 +18,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import chessgame.chess.board.Board;
@@ -38,7 +40,7 @@ import chessgame.chess.manager.GameManager;
  * @author maxharsh
  *
  */
-public class ChessGUI{
+public class ChessGUI {
 
     private static final long serialVersionUID = 1L;
     private GameManager gm = new GameManager();
@@ -55,6 +57,7 @@ public class ChessGUI{
     private Point initialClick;
     private Point finalClick;
     private BoardDirection boardDirection;
+    private boolean highlightLegalMoves;
     private ArrayList<Integer[]> listAllValidMoves;
 
     /**
@@ -68,6 +71,7 @@ public class ChessGUI{
         this.boardPanel.setLocation(0, 0);
         this.frame.setJMenuBar(tableMenuBar);
         this.listAllValidMoves = null;
+        this.highlightLegalMoves = false;
         this.boardDirection = BoardDirection.NORMAL;
         this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.frame.setPreferredSize(FRAME_DIMENSION);
@@ -116,7 +120,7 @@ public class ChessGUI{
 		fileMenu.add(openPGN);
 		fileMenu.add(exitMenuItem);
 		fileMenu.add(saveGameToFile);
-		
+		 
 		return fileMenu;
 	}
     
@@ -136,7 +140,37 @@ public class ChessGUI{
 			}
     	});
     	preferencesMenu.add(flipBoardItem);
+    	preferencesMenu.addSeparator();
+    	
+    	JCheckBoxMenuItem legalMoveHighlighter = new JCheckBoxMenuItem("Highlight Legal Moves", false);
+    	legalMoveHighlighter.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				highlightLegalMoves = legalMoveHighlighter.isSelected();
+			}
+    	});
+    	
+    	preferencesMenu.add(legalMoveHighlighter);
+    	
     	return preferencesMenu;
+    }
+    
+    
+    public static class MoveLog {
+    	private ArrayList<String> moveLog;
+    	
+    	public MoveLog() {
+    		this.moveLog = new ArrayList<String>();
+    	}
+    	
+    	public ArrayList<String> getMoveLog() {
+    		return this.moveLog;
+    	}
+    	
+    	public void addMove(String move) {
+    		this.moveLog.add(move);
+    	}
     }
     
     /**
@@ -222,33 +256,56 @@ public class ChessGUI{
     			
 				@Override
 				public void mouseReleased(MouseEvent e) {
-					listAllValidMoves = gm.getListAllValidMoves(board, board.getPieceFromBoard(row, col));
-					
-					if(board.getPieceFromBoard(row, col) != null) {
-						for(int i = 0; i < listAllValidMoves.size(); i++) {
-							System.out.println(Arrays.toString(listAllValidMoves.get(i)));
-						}
-					}
 					
 					// cancels piece selection
 					if(SwingUtilities.isRightMouseButton(e)) {
 						initialClick = null;
 						finalClick = null;
+						
+						// ensure when a player cancels clicking on a piece all valid moves that were highlighted are cleared
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								highlightLegalMoves = false;
+								boardPanel.drawBoard();
+							}
+						});
 					} 
 					// allows player to move piece 
 					else if(SwingUtilities.isLeftMouseButton(e)) {
 						if(initialClick == null) {
 							initialClick = new Point(row, col);
+
+							listAllValidMoves = gm.getListAllValidMoves(board, board.getPieceFromBoard(row, col));
+							
+							if(board.getPieceFromBoard(row, col) != null) {
+								for(int i = 0; i < listAllValidMoves.size(); i++) {
+									System.out.println(Arrays.toString(listAllValidMoves.get(i)));
+								}
+							}
+							// to draw out the legal moves on the board
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									highlightLegalMoves = true;
+									boardPanel.drawBoard();
+								}
+							});
+							
 						} else {
 							finalClick = new Point(row, col);
 							// after a valid move, reset the final and initial clicks
-							if(gm.makeMove((int)initialClick.getX(), (int)initialClick.getY(), (int)finalClick.getX(), (int)finalClick.getY())) {
+							if(gm.canMove((int)initialClick.getX(), (int)initialClick.getY(), (int)finalClick.getX(), (int)finalClick.getY())) {
+								// add most recent move to move log 
+								gm.makeMove((int)initialClick.getX(), (int)initialClick.getY(), row, col, board, 
+										board.getPieceFromBoard((int)initialClick.getX(), (int)initialClick.getY()));
 								initialClick = null;
 								finalClick = null;
 								
 								SwingUtilities.invokeLater(new Runnable() {
 									@Override
 									public void run() {
+										highlightLegalMoves = false;
 										boardPanel.drawBoard();
 									}
 								});
@@ -256,6 +313,8 @@ public class ChessGUI{
 								// make new pop-up window detailing error
 								initialClick = null;
 								finalClick = null;
+								JOptionPane.showMessageDialog(frame, "Illegal move. Try again.",
+							               "Move Detector", JOptionPane.ERROR_MESSAGE);
 								throw new IllegalArgumentException("Invalid move. Try again.");
 							}
 						}
@@ -294,7 +353,7 @@ public class ChessGUI{
     		removeAll();
     		assignTileColor();
     		assignImage();
-    		//highlightLegalMoves();
+    		highlightLegalMoveTiles();
     		validate();
     		repaint();
     	}
@@ -304,10 +363,8 @@ public class ChessGUI{
 			setBackground(isLight ?  new Color(64, 47, 29) : new Color(210, 180, 140));
 		}
 		
-		private void highlightLegalMoves() {
-			int[] tile = new int[] {row, col};
-			
-			if(listAllValidMoves != null) {
+		private void highlightLegalMoveTiles() {
+			if(listAllValidMoves != null && highlightLegalMoves) {
 				for(int i = 0; i < listAllValidMoves.size(); i++) {
 					if(listAllValidMoves.get(i)[0] == row && listAllValidMoves.get(i)[1] == col) {
 						try {
@@ -316,7 +373,6 @@ public class ChessGUI{
 							// skip
 						}
 					}
-					break;
 				}
 			}
 		}

@@ -73,7 +73,7 @@ public class Pawn extends Piece {
 					if(board.getPieceFromBoard(this.getRow(), this.getColumn() - 1) != null 
 							&& board.getPieceFromBoard(this.getRow(), this.getColumn() - 1).getType() == Type.PAWN &&
 							board.getPieceFromBoard(this.getRow(), this.getColumn() - 1).getColor() == Color.BLACK) {
-						if(deltaRow == 1 && deltaCol == -1 && board.getPieceFromBoard(row, column) == null) {
+						if(deltaRow == 1 && deltaCol == 1 && board.getPieceFromBoard(row, column) == null) {
 							return true;
 						}
 						return false;
@@ -81,7 +81,7 @@ public class Pawn extends Piece {
 					if(board.getPieceFromBoard(this.getRow(), this.getColumn() + 1) != null 
 							&& board.getPieceFromBoard(this.getRow(), this.getColumn() + 1).getType() == Type.PAWN &&
 							board.getPieceFromBoard(this.getRow(), this.getColumn() + 1).getColor() == Color.BLACK) {
-						if(deltaRow == 1 && deltaCol == 1 && board.getPieceFromBoard(row, column) == null) {
+						if(deltaRow == 1 && deltaCol == -1 && board.getPieceFromBoard(row, column) == null) {
 							return true;
 						}
 						return false;
@@ -125,15 +125,15 @@ public class Pawn extends Piece {
 					if(board.getPieceFromBoard(this.getRow(), this.getColumn() - 1) != null 
 							&& board.getPieceFromBoard(this.getRow(), this.getColumn() - 1).getType() == Type.PAWN &&
 							board.getPieceFromBoard(this.getRow(), this.getColumn() - 1).getColor() == Color.WHITE) {
-						if(deltaRow == -1 && deltaCol == -1 && board.getPieceFromBoard(row, column) == null) {
+						if(deltaRow == -1 && deltaCol == 1 && board.getPieceFromBoard(row, column) == null) {
 							return true;
 						}
 						return false;
 					}
 					if(board.getPieceFromBoard(this.getRow(), this.getColumn() + 1) != null 
 							&& board.getPieceFromBoard(this.getRow(), this.getColumn() + 1).getType() == Type.PAWN &&
-							board.getPieceFromBoard(this.getRow(), this.getColumn() + 1).getColor() == Color.BLACK) {
-						if(deltaRow == -1 && deltaCol == 1 && board.getPieceFromBoard(row, column) == null) {
+							board.getPieceFromBoard(this.getRow(), this.getColumn() + 1).getColor() == Color.WHITE) {
+						if(deltaRow == -1 && deltaCol == -1 && board.getPieceFromBoard(row, column) == null) {
 							return true;
 						}
 						return false;

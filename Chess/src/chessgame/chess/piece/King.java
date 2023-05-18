@@ -40,7 +40,25 @@ public class King extends Piece {
 				|| (rowDiff == 1 && columnDiff > 1) || (columnDiff == 1 && rowDiff > 1)) {
 			return false;
 		}
-		return !isKingInCheck(row, column, board);
+		
+		// case of moving too close to enemy King
+		if(this.getColor() == Color.WHITE) { 
+			King oppositeKing = (King) board.getKing(Color.BLACK);
+			if((Math.abs(oppositeKing.getRow() - row) < 2 && Math.abs(oppositeKing.getColumn() - column) == 0) ||
+					(Math.abs(oppositeKing.getColumn() - column) < 2 && Math.abs(oppositeKing.getRow() - row) == 0)
+				|| (Math.abs(oppositeKing.getColumn() - column) == 1 && Math.abs(oppositeKing.getRow() - row) == 1)) {
+				return false;
+			}
+		} else {
+			King oppositeKing = (King) board.getKing(Color.WHITE);
+			if((Math.abs(oppositeKing.getRow() - row) < 2 && Math.abs(oppositeKing.getColumn() - column) == 0) ||
+					(Math.abs(oppositeKing.getColumn() - column) < 2 && Math.abs(oppositeKing.getRow() - row) == 0)
+				|| (Math.abs(oppositeKing.getColumn() - column) == 1 && Math.abs(oppositeKing.getRow() - row) == 1)) {
+				return false;
+			}
+		}
+		return true;
+		//return !isKingInCheck(row, column, board);
 	}
 	
 	/** 
