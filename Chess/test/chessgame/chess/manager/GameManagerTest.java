@@ -277,19 +277,14 @@ class GameManagerTest {
 		assertTrue(gm.isCheckmate());
 	}
 
-	@Test
-	void testUpdateScore() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	void testSetLastPieceMoved() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	void testIsKingInCheck() {
-		fail("Not yet implemented");
+	@Test 
+	void moveWriter() {
+		GameManager gm = new GameManager();
+		MoveWriter mv = new MoveWriter();
+		gm.makeMove(6, 4, 4, 4, gm.getBoard(), gm.getBoard().getPieceFromBoard(6, 4));
+		
+		String move = mv.moveWrite(6, 4, 4, 4, gm.getBoard().getPieceFromBoard(4, 4), null, gm);
+		System.out.println(move);
 	}
 
 }

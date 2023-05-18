@@ -13,6 +13,7 @@ public class King extends Piece {
 
 	private boolean castled = false;
 	private boolean hasMoved = false;
+	private static final int VALUE = 10000;
 	
 	/**
 	 * Creates new King object with values for all fields.
@@ -22,7 +23,7 @@ public class King extends Piece {
 	 * @param column column of piece on board
 	 */
 	public King(Color color, int row, int column) {
-		super(Type.KING, color, row, column);
+		super(Type.KING, color, row, column, VALUE);
 	}
 
 	// should delegate to canCastle if a King is pressed in its original position and a castling square is 

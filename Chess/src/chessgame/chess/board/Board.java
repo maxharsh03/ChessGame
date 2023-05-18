@@ -27,7 +27,7 @@ public class Board implements Cloneable {
 	/** 2D array of all the pieces on the board */
 	private Piece[][] pieces;
 	
-	public Board() {
+	public Board() { 
 		pieces = new Piece[ROWS][COLUMNS];
 		this.createBoard();
 	}

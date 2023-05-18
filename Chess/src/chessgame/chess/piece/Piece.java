@@ -18,15 +18,17 @@ public abstract class Piece {
 	private Color color;
 	private int row;
 	private int column;
+	private int value;
 	private Type type;
 	private Map<Piece, String> map;
 	
-	public Piece(Type type, Color color, int row, int column) {
+	public Piece(Type type, Color color, int row, int column, int value) {
 		setName(name);
 		setColor(color);
 		setRow(row);
 		setColumn(column);
 		setType(type);
+		setValue(value);
 		map = new HashMap<Piece, String>();
 		initMap();
 	}
@@ -145,4 +147,20 @@ public abstract class Piece {
 	public String getImage() {
 		return map.get(this);
 	}
+
+	/**
+	 * @return the value
+	 */
+	public int getValue() {
+		return value;
+	}
+
+	/**
+	 * @param value the value to set
+	 */
+	public void setValue(int value) {
+		this.value = value;
+	}
+	
+	
 }

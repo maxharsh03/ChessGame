@@ -4,8 +4,10 @@ import chessgame.chess.board.Board;
 
 public class Queen extends Piece {
 
+	private static final int VALUE = 900;
+	
 	public Queen(Color color, int row, int column) {
-		super(Type.QUEEN, color, row, column);
+		super(Type.QUEEN, color, row, column, VALUE);
 	}
 
 	@Override

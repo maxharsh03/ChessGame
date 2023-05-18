@@ -1,12 +1,13 @@
 package chessgame.chess.piece;
 
 import chessgame.chess.board.Board;
-//import chessgame.chess.manager.GameManager;
 
 public class Bishop extends Piece {
 	
+	private static final int VALUE = 300;
+	 
 	public Bishop(Color color, int row, int column) {
-		super(Type.BISHOP, color, row, column);
+		super(Type.BISHOP, color, row, column, VALUE);
 	}
 
 	/**

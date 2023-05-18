@@ -330,7 +330,7 @@ public class GameManager {
 						for(int endRow = 0; endRow < 8; endRow++) {
 							for(int endCol = 0; endCol < 8; endCol++) {
 								if(canMove(startRow, startCol, endRow, endCol)) {
-									return true;
+									return false;
 								}
 							}
 						}
@@ -338,7 +338,7 @@ public class GameManager {
 				}
 			}
 		}
-		return false;
+		return true;
 	}
 	
 	/**

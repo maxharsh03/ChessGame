@@ -12,6 +12,7 @@ public class Pawn extends Piece {
 
 	private boolean firstMove = true;
 	private boolean hasDoneEnPassant = false;
+	private static final int VALUE = 100;
 	
 	/**
 	 * Constructs Pawn object with values for all fields
@@ -21,7 +22,7 @@ public class Pawn extends Piece {
 	 * @param column
 	 */
 	public Pawn(Color color, int row, int column) {
-		super(Type.PAWN, color, row, column);
+		super(Type.PAWN, color, row, column, VALUE);
 	}
 	
 	/**

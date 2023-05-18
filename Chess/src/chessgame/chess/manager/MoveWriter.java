@@ -2,19 +2,22 @@ package chessgame.chess.manager;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import chessgame.chess.piece.Color;
 import chessgame.chess.piece.Piece;
-import chessgame.chess.piece.Rook;
 import chessgame.chess.piece.Type;
 
+/**
+ * Converts a move just made by a player into PGN format. This includes en passant, 
+ * captures, castling, pawn promotion, checkmate, check, stalemate, and all other edge cases. 
+ * @author maxharsh
+ *
+ */
 public class MoveWriter {
 	
 	private Map<Integer, String> moveMap;
 	
 	public MoveWriter() {
 		moveMap = new HashMap<Integer, String>();
-		// for columns only with the square (0, a) corresponding to white's bottom left piece 
+		// for columns only; the square (0, a) corresponds to white's bottom left piece 
 		moveMap.put(0, "a");
 		moveMap.put(1, "b");
 		moveMap.put(2, "c");
@@ -25,38 +28,68 @@ public class MoveWriter {
 		moveMap.put(7, "h");
 	}
 	
-	public String moveWrite(Piece piece, int rowInit, int colInit, int rowFinal, int colFinal) {
-		String value = "";
-		String pieceType = "";
-		
-		if(piece.getType() == Type.PAWN) {
-			pieceType += "p";
-		} else if(piece.getType() == Type.ROOK) {
-			pieceType += "r";
-		} else if(piece.getType() == Type.BISHOP) {
-			pieceType += "b";
-		} else if(piece.getType() == Type.KNIGHT) {
-			pieceType += "n";
-		} else if(piece.getType() == Type.QUEEN) {
-			pieceType += "q";
-		} else if(piece.getType() == Type.KING) {
-			pieceType += "k";
-		} 
-		
-		if(piece.getColor() == Color.WHITE) {
-			pieceType = pieceType.toUpperCase();
+	public String moveWrite(int rowInit, int colInit, int rowFinal, int colFinal, Piece piece, Piece capturedPiece, GameManager gm) {
+		// castling moves 
+		if(piece.getType() == Type.KING) {
+			if(colFinal == 2 && colInit == 4) {
+				return "O-O-O";
+			} if(colFinal == 6 && colInit == 4) {
+				return "O-O";
+			}
 		}
 		
-		value += pieceType;
-		value += moveMap.get(colInit) + Integer.toString(rowInit) + moveMap.get(colFinal) + Integer.toString(rowFinal);
+		String pieceString = getPieceSignature(piece);
+		String captureString = "";
+		String checkString = "";
+		String checkMateString = "";
+		String stalemateString = "";
 		
-		return value;
+		if(capturedPiece != null) {
+			captureString = "x";
+		}
+		
+		if(gm.isCheck()) {
+			checkString = "+";
+		} 
+		
+		/*
+		if(gm.isCheckmate()) {
+			checkMateString = "#";
+		}
+		
+		if(gm.isStalemate()) {
+			stalemateString = "$";
+		}
+		*/
+		
+		if("+".equals(checkString) && "#".equals(checkMateString)) {
+			checkString = "";
+		}
+		
+		// handles pawn moves including en passant and pawn promotion
+		if(piece.getType() == Type.PAWN) {
+			if(colFinal == 0 || colFinal == 7) {
+				return moveMap.get(colInit) + moveMap.get(colFinal) + Integer.toString(rowFinal) + "=Q" + checkString + checkMateString + stalemateString;				
+			} else if(capturedPiece != null) {
+				return moveMap.get(colInit) + "x" + moveMap.get(colFinal) + Integer.toString(rowFinal) + checkString + checkMateString + stalemateString;
+			} return moveMap.get(colFinal) + Integer.toString(rowFinal) + checkString + checkMateString + stalemateString;
+		}
+		
+		return pieceString + captureString + moveMap.get(colFinal) + Integer.toString(rowFinal) + checkString + checkMateString + stalemateString;
 	}
 	
-	public static void main(String[]args) {
-		MoveWriter mv = new MoveWriter();
-		Piece piece = new Rook(Color.WHITE, 0, 0);
-		
-		System.out.println(mv.moveWrite(piece, 0, 0, 3, 3));
+	// returns letter that represents piece in standard chess notation
+	public String getPieceSignature(Piece piece) {
+		if(piece.getType() == Type.PAWN) {
+			return "";
+		} if(piece.getType() == Type.ROOK) {
+			return "R";
+		} if(piece.getType() == Type.BISHOP) {
+			return "B";
+		} if(piece.getType() == Type.KNIGHT) {
+			return "N";
+		} if(piece.getType() == Type.QUEEN) {
+			return "Q";
+		} return "K";
 	}
 }

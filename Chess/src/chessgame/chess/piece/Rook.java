@@ -4,10 +4,11 @@ import chessgame.chess.board.Board;
 
 public class Rook extends Piece {
 
+	private static final int VALUE = 500;
 	private boolean hasMoved = false;
 	
 	public Rook(Color color, int row, int column) {
-		super(Type.ROOK, color, row, column);
+		super(Type.ROOK, color, row, column, VALUE);
 	}
 
 	@Override

@@ -4,8 +4,10 @@ import chessgame.chess.board.Board;
 
 public class Knight extends Piece {
 
+	private static final int VALUE = 300;
+	
 	public Knight(Color color, int row, int column) {
-		super(Type.KNIGHT, color, row, column);
+		super(Type.KNIGHT, color, row, column, VALUE);
 	}
 
 	/** 

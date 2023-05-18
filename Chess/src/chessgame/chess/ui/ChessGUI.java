@@ -29,6 +29,8 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import chessgame.chess.board.Board;
 import chessgame.chess.manager.GameManager;
+import chessgame.chess.manager.MoveWriter;
+import chessgame.chess.piece.Piece;
 
 /**
  * ChessGUI is the Graphical User Interface for the Chess Game. This class 
@@ -43,17 +45,22 @@ import chessgame.chess.manager.GameManager;
 public class ChessGUI {
 
     private static final long serialVersionUID = 1L;
-    private GameManager gm = new GameManager();
-    private Board board = gm.getBoard();
+    private GameManager gm;
+    private MoveLog moveLog;
+    private Board board;
     private JFrame frame;
+    private GameHistoryPanel gameHistoryPanel;
+    private TakenPiecesPanel takenPiecesPanel;
     private BoardPanel boardPanel;
+    private MoveWriter moveWriter;
+    private Piece piece;
+    private Piece capturedPiece;
     private static final int FRAME_WIDTH = 600;
     private static final int FRAME_HEIGHT = 600;
     private static final int ROW = 8;
     private static final int COL = 8;
     
     private static final Dimension FRAME_DIMENSION = new Dimension(FRAME_WIDTH, FRAME_HEIGHT);
-    
     private Point initialClick;
     private Point finalClick;
     private BoardDirection boardDirection;
@@ -67,7 +74,13 @@ public class ChessGUI {
         this.frame = new JFrame("Chess") ;
         this.frame.setLayout(new BorderLayout());
         JMenuBar tableMenuBar = createTableMenuBar();
+        this.gm = new GameManager();
+        this.board = gm.getBoard();
+        this.moveLog = new MoveLog();
         this.boardPanel = new BoardPanel();
+        this.moveWriter = new MoveWriter();
+        this.gameHistoryPanel = new GameHistoryPanel();
+        this.takenPiecesPanel = new TakenPiecesPanel();
         this.boardPanel.setLocation(0, 0);
         this.frame.setJMenuBar(tableMenuBar);
         this.listAllValidMoves = null;
@@ -76,6 +89,8 @@ public class ChessGUI {
         this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.frame.setPreferredSize(FRAME_DIMENSION);
         this.frame.add(this.boardPanel, BorderLayout.CENTER);
+        this.frame.add(this.takenPiecesPanel, BorderLayout.WEST);
+        this.frame.add(this.gameHistoryPanel, BorderLayout.EAST);
         this.frame.pack();
         this.frame.setVisible(true);
     }
@@ -296,16 +311,29 @@ public class ChessGUI {
 							finalClick = new Point(row, col);
 							// after a valid move, reset the final and initial clicks
 							if(gm.canMove((int)initialClick.getX(), (int)initialClick.getY(), (int)finalClick.getX(), (int)finalClick.getY())) {
-								// add most recent move to move log 
+								
+								// set piece and captured piece
+								piece = board.getPieceFromBoard((int)initialClick.getX(), (int)initialClick.getY());
+								capturedPiece = board.getPieceFromBoard((int)finalClick.getX(), (int)finalClick.getY());
+								
 								gm.makeMove((int)initialClick.getX(), (int)initialClick.getY(), row, col, board, 
 										board.getPieceFromBoard((int)initialClick.getX(), (int)initialClick.getY()));
 								initialClick = null;
 								finalClick = null;
 								
+								// add move to move log
+								
+								/*
+								moveLog.addMove(moveWriter.moveWrite((int)initialClick.getX(), (int)initialClick.getY(), 
+										(int)finalClick.getX(), (int)finalClick.getY(), piece, capturedPiece, gm));
+								*/
+								
 								SwingUtilities.invokeLater(new Runnable() {
 									@Override
 									public void run() {
 										highlightLegalMoves = false;
+										gameHistoryPanel.redraw(moveLog);
+										takenPiecesPanel.redraw(moveLog.getMoveLog(), gm.getPlayers()[0].getCapturedPieces(), gm.getPlayers()[1].getCapturedPieces());
 										boardPanel.drawBoard();
 									}
 								});
