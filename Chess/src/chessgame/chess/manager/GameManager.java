@@ -253,6 +253,32 @@ public class GameManager {
 		}
 		return true;
 	}
+
+	/**
+	 * Determines if stalemate has occured (when a player is not in check but also does not have any valid moves).
+	 * @param color
+	 * @return
+	 */
+	public boolean isStalemate() {
+		if(!isCheck()) {
+			for(int startRow = 0; startRow < 8; startRow++) {
+				for(int startCol = 0; startCol < 8; startCol++) {
+					Piece piece = board.getPieceFromBoard(startRow, startCol);
+					if(piece != null && piece.getColor() == getCurrentPlayer().getColor()) {
+						for(int endRow = 0; endRow < 8; endRow++) {
+							for(int endCol = 0; endCol < 8; endCol++) {
+								if(canMove(startRow, startCol, endRow, endCol)) {
+									return false;
+								}
+							}
+						}
+					}
+				}
+			}
+			return true;
+		}
+		return false;
+	}
 	
 	/** 
 	 * Updates score of the game for a player when a piece is captured. 
@@ -314,31 +340,6 @@ public class GameManager {
 			}
 		}
 		return false;
-	}
-	
-	/**
-	 * Determines if stalemate has occured (when a player is not in check but also does not have any valid moves).
-	 * @param color
-	 * @return
-	 */
-	public boolean isStalemate() {
-		if(!isCheck()) {
-			for(int startRow = 0; startRow < 8; startRow++) {
-				for(int startCol = 0; startCol < 8; startCol++) {
-					Piece piece = board.getPieceFromBoard(startRow, startCol);
-					if(piece != null && piece.getColor() == getCurrentPlayer().getColor()) {
-						for(int endRow = 0; endRow < 8; endRow++) {
-							for(int endCol = 0; endCol < 8; endCol++) {
-								if(canMove(startRow, startCol, endRow, endCol)) {
-									return false;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		return true;
 	}
 	
 	/**

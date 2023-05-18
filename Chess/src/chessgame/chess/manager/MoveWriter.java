@@ -52,7 +52,6 @@ public class MoveWriter {
 			checkString = "+";
 		} 
 		
-		/*
 		if(gm.isCheckmate()) {
 			checkMateString = "#";
 		}
@@ -60,7 +59,6 @@ public class MoveWriter {
 		if(gm.isStalemate()) {
 			stalemateString = "$";
 		}
-		*/
 		
 		if("+".equals(checkString) && "#".equals(checkMateString)) {
 			checkString = "";
@@ -68,7 +66,7 @@ public class MoveWriter {
 		
 		// handles pawn moves including en passant and pawn promotion
 		if(piece.getType() == Type.PAWN) {
-			if(colFinal == 0 || colFinal == 7) {
+			if(rowFinal == 0 || rowFinal == 7) {
 				return moveMap.get(colInit) + moveMap.get(colFinal) + Integer.toString(rowFinal) + "=Q" + checkString + checkMateString + stalemateString;				
 			} else if(capturedPiece != null) {
 				return moveMap.get(colInit) + "x" + moveMap.get(colFinal) + Integer.toString(rowFinal) + checkString + checkMateString + stalemateString;

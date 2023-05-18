@@ -27,7 +27,7 @@ public class TakenPiecesPanel extends JPanel {
 	private JPanel southPanel;
 	private static final EtchedBorder PANEL_BORDER = new EtchedBorder(EtchedBorder.RAISED);
 	private static final Color PANEL_COLOR = Color.decode("0xFDFE6");
-	private static final Dimension TAKEN_PIECES_DIMENSION = new Dimension(40, 80);
+	private static final Dimension TAKEN_PIECES_DIMENSION = new Dimension(60, 100);
 	
 	public TakenPiecesPanel() {
 		
@@ -68,7 +68,7 @@ public class TakenPiecesPanel extends JPanel {
 		for(Piece piece : whiteCapturedPieces) {
 			try {
 				BufferedImage image = ImageIO.read(new File(piece.getImage()));
-				this.southPanel.add(new JLabel(new ImageIcon(image.getScaledInstance(75, 75, Image.SCALE_DEFAULT)), JLabel.CENTER));
+				this.southPanel.add(new JLabel(new ImageIcon(image.getScaledInstance(25, 25, Image.SCALE_DEFAULT))));
 			} catch (IOException e) {
 				// skip, this exception should never occur
 			}
@@ -77,7 +77,7 @@ public class TakenPiecesPanel extends JPanel {
 		for(Piece piece : blackCapturedPieces) {
 			try {
 				BufferedImage image = ImageIO.read(new File(piece.getImage()));
-				this.northPanel.add(new JLabel(new ImageIcon(image.getScaledInstance(75, 75, Image.SCALE_DEFAULT)), JLabel.CENTER));
+				this.northPanel.add(new JLabel(new ImageIcon(image.getScaledInstance(25, 25, Image.SCALE_DEFAULT))));
 			} catch (IOException e) {
 				// skip, this exception should never occur
 			}

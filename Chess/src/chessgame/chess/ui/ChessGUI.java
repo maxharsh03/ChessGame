@@ -55,7 +55,7 @@ public class ChessGUI {
     private MoveWriter moveWriter;
     private Piece piece;
     private Piece capturedPiece;
-    private static final int FRAME_WIDTH = 600;
+    private static final int FRAME_WIDTH = 700;
     private static final int FRAME_HEIGHT = 600;
     private static final int ROW = 8;
     private static final int COL = 8;
@@ -318,15 +318,15 @@ public class ChessGUI {
 								
 								gm.makeMove((int)initialClick.getX(), (int)initialClick.getY(), row, col, board, 
 										board.getPieceFromBoard((int)initialClick.getX(), (int)initialClick.getY()));
-								initialClick = null;
-								finalClick = null;
 								
 								// add move to move log
+								String moveText = moveWriter.moveWrite((int)initialClick.getX(), (int)initialClick.getY(), 
+										(int)finalClick.getX(), (int)finalClick.getY(), piece, capturedPiece, gm);
+								System.out.println(moveText);
+								moveLog.addMove(moveText);
 								
-								/*
-								moveLog.addMove(moveWriter.moveWrite((int)initialClick.getX(), (int)initialClick.getY(), 
-										(int)finalClick.getX(), (int)finalClick.getY(), piece, capturedPiece, gm));
-								*/
+								initialClick = null;
+								finalClick = null;
 								
 								SwingUtilities.invokeLater(new Runnable() {
 									@Override
