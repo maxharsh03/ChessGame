@@ -14,16 +14,14 @@ import chessgame.chess.board.Board;
  */
 public abstract class Piece {
 
-	private String name;
 	private Color color;
 	private int row;
 	private int column;
-	private int value;
 	private Type type;
+	private int value;
 	private Map<Piece, String> map;
 	
 	public Piece(Type type, Color color, int row, int column, int value) {
-		setName(name);
 		setColor(color);
 		setRow(row);
 		setColumn(column);
@@ -88,20 +86,6 @@ public abstract class Piece {
 		this.color = color;
 	}
 
-	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * @param name the name to set
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	public void setType(Type type) {
 		this.type = type;
 	}
@@ -161,6 +145,4 @@ public abstract class Piece {
 	public void setValue(int value) {
 		this.value = value;
 	}
-	
-	
 }

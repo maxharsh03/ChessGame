@@ -60,7 +60,7 @@ public class King extends Piece {
 		}
 		return true;
 		//return !isKingInCheck(row, column, board);
-	}
+	} 
 	
 	/** 
 	 * King's implementation of isValid in Piece. First checks that the move is not of bounds. 
@@ -71,26 +71,27 @@ public class King extends Piece {
 
 		if(row < 0 || row > 7 || column  < 0 || column > 7) {
 			return false;
-		} 
+		}  
+		
 		// check for white's castling moves
 		else if(Color.WHITE == this.getColor() && !castled && !hasMoved
 				&& !isKingInCheck(this.getRow(), this.getColumn(), board)) {
 			// check for right castling move first
-			if(board.getPieceFromBoard(7, 7) != null && board.getPieceFromBoard(7, 7).getType() == Type.ROOK) {
+			if(board.getPieceFromBoard(7, 7) != null && board.getPieceFromBoard(7, 7).getType() == Type.ROOK && 
+					(this.getRow() == row && row == 7 && this.getColumn() == 4 && column == 6)) {
 				Rook tempRook = (Rook) board.getPieceFromBoard(7, 7);
 				if(!tempRook.getHasMoved() && tempRook.getColor() == Color.WHITE  
 						&& board.getPieceFromBoard(7, 5) == null && board.getPieceFromBoard(7, 6) == null 
-						&& !isKingInCheck(7, 5, board) && !isKingInCheck(7, 6, board)
-						&& this.getRow() == row && row == 7) {
+						&& !isKingInCheck(7, 5, board) && !isKingInCheck(7, 6, board)) {
 					return true;
 				} 
 			}
-			if(board.getPieceFromBoard(7, 0) != null && board.getPieceFromBoard(7, 0).getType() == Type.ROOK) {
+			if(board.getPieceFromBoard(7, 0) != null && board.getPieceFromBoard(7, 0).getType() == Type.ROOK && 
+					(this.getRow() == row && row == 7 && this.getColumn() == 4 && column == 2)) {
 				Rook tempRook2 = (Rook) board.getPieceFromBoard(7, 0);
 				if(!tempRook2.getHasMoved() && tempRook2.getColor() == Color.WHITE
 						&& board.getPieceFromBoard(7, 3) == null && board.getPieceFromBoard(7, 2) == null 
-						&& !isKingInCheck(7, 3, board) && !isKingInCheck(7, 2, board) 
-						&& this.getRow() == row && row == 7) {
+						&& !isKingInCheck(7, 3, board) && !isKingInCheck(7, 2, board)) {
 					return true;
 				}
 			}
@@ -99,7 +100,8 @@ public class King extends Piece {
 		} else if(Color.BLACK == this.getColor() && !castled && !hasMoved 
 				&& !isKingInCheck(this.getRow(), this.getColumn(), board)) {
 			// check for right castling move first
-			if(board.getPieceFromBoard(0, 7) != null && board.getPieceFromBoard(0, 7).getType() == Type.ROOK) {
+			if(board.getPieceFromBoard(0, 7) != null && board.getPieceFromBoard(0, 7).getType() == Type.ROOK && 
+					(this.getRow() == row && row == 0 && this.getColumn() == 4 && column == 6)) {
 				Rook tempRook = (Rook) board.getPieceFromBoard(0, 7);
 				if(!tempRook.getHasMoved() && tempRook.getColor() == Color.BLACK 
 						&& board.getPieceFromBoard(0, 5) == null && board.getPieceFromBoard(0, 6) == null 
@@ -109,7 +111,8 @@ public class King extends Piece {
 					return true;
 				} 
 			}
-			if(board.getPieceFromBoard(0, 0) != null && board.getPieceFromBoard(0, 0).getType() == Type.ROOK) {
+			if(board.getPieceFromBoard(0, 0) != null && board.getPieceFromBoard(0, 0).getType() == Type.ROOK && 
+					(this.getRow() == row && row == 0 && this.getColumn() == 4 && column == 2)) {
 				Rook tempRook2 = (Rook) board.getPieceFromBoard(0, 0);
 				if(!tempRook2.getHasMoved() && tempRook2.getColor() == Color.BLACK 
 						&& board.getPieceFromBoard(0, 3) == null && board.getPieceFromBoard(0, 2) == null 

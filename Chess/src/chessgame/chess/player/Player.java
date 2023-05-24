@@ -21,15 +21,18 @@ public class Player {
     private ArrayList<Piece> pieces;
     /** List of pieces that a player that has captured from their opponent */
     private ArrayList<Piece> captured;
+    /** player of opponent */
+    private Color opponentColor;
 
     /**
      * Constructs a Player object with values for all fields.
      * @param name
      * @param color
      */
-    public Player(String name, Color color) {
+    public Player(String name, Color color, Color opponentColor) {
         this.name = name;
         this.color = color;
+        this.opponentColor = opponentColor;
         this.pieces = new ArrayList<Piece>();
         this.captured = new ArrayList<Piece>();
     }
@@ -40,6 +43,10 @@ public class Player {
      */
     public String getName() {
         return name;
+    }
+    
+    public Color getOpponentColor() {
+    	return opponentColor;
     }
     
     /**
@@ -89,4 +96,10 @@ public class Player {
     public void removePiece(Piece piece) {
         pieces.remove(piece);
     }
+    
+    /*
+    public boolean isCheck(Board board) {
+    	
+    }
+    */
 }

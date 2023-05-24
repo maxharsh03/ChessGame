@@ -1,5 +1,8 @@
 package chessgame.chess.board;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
 import chessgame.chess.piece.Bishop;
 import chessgame.chess.piece.Color;
 import chessgame.chess.piece.King;
@@ -18,7 +21,7 @@ import chessgame.chess.piece.Type;
  * @author maxharsh
  *
  */
-public class Board implements Cloneable {
+public class Board {
 
 	/** number of rows on the board */
 	private static final int ROWS = 8;
@@ -33,6 +36,42 @@ public class Board implements Cloneable {
 	}
 	
 	/**
+	 * Creates deep copy of the original Board. For generating computer moves. 
+	 * @param b
+	 */
+	public Board(Board board) {
+		this.pieces = deepCopy(board.pieces);
+	}
+	
+	public Piece[][] deepCopy(Piece[][] original) {
+		if(original == null) {
+	        return null;
+	    }
+
+		Piece[][] result = new Piece[8][8];
+		for(int i = 0; i < 8; i++) {
+			for(int j = 0; j < 8; j++) {
+				if(original[i][j] != null) {
+					if(original[i][j].getType() == Type.KING) {
+						result[i][j] = new King(original[i][j].getColor(), i, j);
+					} else if(original[i][j].getType() == Type.BISHOP) {
+						result[i][j] = new Bishop(original[i][j].getColor(), i, j);
+					} else if(original[i][j].getType() == Type.PAWN) {
+						result[i][j] = new Pawn(original[i][j].getColor(), i, j);
+					} else if(original[i][j].getType() == Type.KNIGHT) {
+						result[i][j] = new Knight(original[i][j].getColor(), i, j);
+					} else if(original[i][j].getType() == Type.QUEEN) {
+						result[i][j] = new Queen(original[i][j].getColor(), i, j);
+					} else {
+						result[i][j] = new Rook(original[i][j].getColor(), i, j);
+					}
+				}
+			}
+		}
+	    return result;
+	}
+	
+	/**
 	 * Will return Piece object from specified board coordinates
 	 * @param row row of board
 	 * @param column column of board
@@ -43,17 +82,6 @@ public class Board implements Cloneable {
 			return pieces[row][column];
 		}
 		return null;
-	}
-	
-	/**
-	 * Retrieves cloned object.
-	 */
-	public Object clone(){  
-	    try{  
-	        return super.clone();  
-	    }catch(Exception e){ 
-	        return null; 
-	    }
 	}
 	
 	/** 

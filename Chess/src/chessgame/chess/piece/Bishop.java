@@ -4,7 +4,7 @@ import chessgame.chess.board.Board;
 
 public class Bishop extends Piece {
 	
-	private static final int VALUE = 300;
+	private static final int VALUE = 330;
 	 
 	public Bishop(Color color, int row, int column) {
 		super(Type.BISHOP, color, row, column, VALUE);

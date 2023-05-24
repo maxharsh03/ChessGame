@@ -82,7 +82,7 @@ public class TakenPiecesPanel extends JPanel {
 				// skip, this exception should never occur
 			}
 		}
-		
 		validate();
+		repaint();
 	}
 }

@@ -2,6 +2,7 @@ package chessgame.chess.manager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import chessgame.chess.board.Board;
 import chessgame.chess.piece.Color;
@@ -22,8 +23,6 @@ import chessgame.chess.player.Player;
  */
 public class GameManager {
 
-	/** List of all valid moves in coordinate form (y, x) */
-	public ArrayList<Integer[]> listAllValidMoves;
 	/** Board object that contains the pieces.  */
 	private Board board;
 	/** Array of the 2 players playing the chess game. */
@@ -33,19 +32,18 @@ public class GameManager {
 	/** Represents coordinates of en passant target */
 	private Piece enPassantTarget;
 	/** allows GameManager to move pieces */
-	private Move move;
+	private ExecuteMove move;
 	
 	/**
 	 * Creates a new GameManger object. 
 	 */
-	public GameManager() {
-		listAllValidMoves = new ArrayList<Integer[]>();
-		board = new Board();
-		move = new Move();
+	public GameManager(Board board, int currentPlayerIndex) {
+		this.board = board;
+		move = new ExecuteMove();
 		enPassantTarget = null;
-		players[0] = new Player("Player 1", Color.WHITE);	
-		players[1] = new Player("Player 2", Color.BLACK);
-		currentPlayerIndex = 0;
+		players[0] = new Player("Player 1", Color.WHITE, Color.BLACK);	
+		players[1] = new Player("Player 2", Color.BLACK, Color.WHITE);
+		this.currentPlayerIndex = currentPlayerIndex;
 		initPlayerPieces();
 	}
 	
@@ -70,10 +68,23 @@ public class GameManager {
 	 * After a turn is completed, switches the current player.
 	 */
 	public void switchPlayer() {
-	 	currentPlayerIndex = (currentPlayerIndex + 1) % 2;
+	 	this.currentPlayerIndex = (this.currentPlayerIndex + 1) % 2;
 	}
+	
+	/**
+	 * Returns player whose move it currently is.
+	 * @return
+	 */
 	public Player getCurrentPlayer() {
-		return players[currentPlayerIndex];
+		return players[this.currentPlayerIndex];
+	}
+	
+	/**
+	 * Returns the player who is NOT in turn during this move.
+	 * @return
+	 */
+	public Player getWaitingPlayer() {
+		return players[(this.currentPlayerIndex + 1) % 2];
 	}
 	
 	/**
@@ -103,7 +114,7 @@ public class GameManager {
 	 * @param columnFinal
 	 * @param board
 	 */
-	public boolean canMove(int rowInitial, int columnInitial, int rowFinal, int columnFinal) {
+	public boolean canMove(int rowInitial, int columnInitial, int rowFinal, int columnFinal, Board board) {
 		// check if starting or ending position are out of bounds
 		if(rowInitial < 0 || rowInitial > 7 || columnInitial < 0 || columnInitial > 7 || rowFinal < 0
 				|| rowFinal > 7 || columnFinal < 0 || columnFinal > 7) {
@@ -126,31 +137,6 @@ public class GameManager {
 		// checks that player does not try to capture piece of same color
 		if(possibleCapture != null && possibleCapture.getColor() == piece.getColor()) {
 			return false;
-		}
-		
-		// must handle king moves entirely separately
-		// implementation not entirely correct, must handle event where king can capture a piece
-		if(piece.getType() == Type.KING) {
-			King king = (King) piece;
-			if((rowInitial == 0 && columnInitial == 4 && rowFinal == rowInitial && columnFinal == 2)
-					|| (rowInitial == 7 && columnInitial == 4 && rowFinal == rowInitial && columnFinal == 2)) {
-				if(piece.isValid(rowFinal, columnFinal, board)) {
-					return true;
-				}
-			} 
-			else if((rowInitial == 0 && columnInitial == 4 && rowFinal == rowInitial && columnFinal == 6)
-					|| (rowInitial == 7 && columnInitial == 4 && rowFinal == rowInitial && columnFinal == 6)) {
-				if(piece.isValid(rowFinal, columnFinal, board)) {
-					return true;
-				}
-			} 
-			/*
-			else {
-				if(piece.isValid(rowFinal, columnFinal, board)) {
-					return true;
-				}
-			}
-			*/
 		}
 		
 		// checks that the player made a valid move for the piece type 
@@ -222,7 +208,7 @@ public class GameManager {
 	 * @return
 	 */
 	
-	public boolean isCheck() {
+	public boolean isCheck(Board board) {
 		return isKingInCheck(getCurrentPlayer().getColor(), board);
 	}
 	
@@ -230,8 +216,8 @@ public class GameManager {
 	 * Determines whether the king for a given player is currently in checkmate. 
 	 * @return
 	 */
-	public boolean isCheckmate() {
-		if(!isCheck()) {
+	public boolean isCheckmate(Board board) {
+		if(!isCheck(board)) {
 			return false;
 		}
 		
@@ -243,7 +229,7 @@ public class GameManager {
 					// check every position to see if making the move can get the king out of check
 					for(int endRow = 0; endRow < 8; endRow++) {
 						for(int endCol = 0; endCol < 8; endCol++) {
-							if(canMove(startRow, startCol, endRow, endCol)) {
+							if(canMove(startRow, startCol, endRow, endCol, board)) {
 								return false;
 							}
 						}
@@ -259,15 +245,15 @@ public class GameManager {
 	 * @param color
 	 * @return
 	 */
-	public boolean isStalemate() {
-		if(!isCheck()) {
+	public boolean isStalemate(Board board) {
+		if(!isCheck(board)) {
 			for(int startRow = 0; startRow < 8; startRow++) {
 				for(int startCol = 0; startCol < 8; startCol++) {
 					Piece piece = board.getPieceFromBoard(startRow, startCol);
 					if(piece != null && piece.getColor() == getCurrentPlayer().getColor()) {
 						for(int endRow = 0; endRow < 8; endRow++) {
 							for(int endCol = 0; endCol < 8; endCol++) {
-								if(canMove(startRow, startCol, endRow, endCol)) {
+								if(canMove(startRow, startCol, endRow, endCol, board)) {
 									return false;
 								}
 							}
@@ -278,39 +264,6 @@ public class GameManager {
 			return true;
 		}
 		return false;
-	}
-	
-	/** 
-	 * Updates score of the game for a player when a piece is captured. 
-	 * @param player
-	 * @return
-	 */
-	public int updateScore(Player player, Piece capturedPiece) {
-		if(capturedPiece.getColor() == Color.WHITE) {
-			if(capturedPiece.getType() == Type.PAWN) {
-				return 1;
-			} else if(capturedPiece.getType() == Type.BISHOP) {
-				return 3;
-			} else if(capturedPiece.getType() == Type.KNIGHT) {
-				return 3;
-			} else if(capturedPiece.getType() == Type.ROOK) {
-				return 5;
-			} else if(capturedPiece.getType() == Type.QUEEN) {
-				return 9;
-			} else { return 0; }
-		} else {
-			if(capturedPiece.getType() == Type.PAWN) {
-				return 1;
-			} else if(capturedPiece.getType() == Type.BISHOP) {
-				return 3;
-			} else if(capturedPiece.getType() == Type.KNIGHT) {
-				return 3;
-			} else if(capturedPiece.getType() == Type.ROOK) {
-				return 5;
-			} else if(capturedPiece.getType() == Type.QUEEN) {
-				return 9;
-			} else { return 0; }
-		}
 	}
 
 	/**
@@ -341,26 +294,25 @@ public class GameManager {
 		}
 		return false;
 	}
-	
+	 
 	/**
 	 * Return all valid moves for a particular piece. Returns an ArrayList filled with 
 	 * positions of valid move for a piece.
 	 * @param listAllValidMoves the listAllValidMoves to set
 	 */
 	public ArrayList<Integer[]> getListAllValidMoves(Board board, Piece piece) {
-		resetListAllValidMoves();
+		
+		ArrayList<Integer[]> listAllValidMoves = new ArrayList<Integer[]>();
 		
 		if(piece == null) {
 			return listAllValidMoves;
 		}
 		
-		// must also verify isKingInCheck for each move
-		int initRow = piece.getRow();
-		int initColumn = piece.getColumn();
 		for(int i = 0; i < 8; i++) {
 			for(int j = 0; j < 8; j++) {
-				if(canMove(piece.getRow(), piece.getColumn(), i, j)) {
+				if(canMove(piece.getRow(), piece.getColumn(), i, j, board)) {
 					listAllValidMoves.add(new Integer[] {i, j});
+					//listAllValidMoves.add(new Move(piece.getRow(), piece.getCol(), i, j));
 				}
 			}
 		}
@@ -368,10 +320,31 @@ public class GameManager {
 	}
 	
 	/**
-	 * Resets the list of valid moves for a piece (ex. after it has just moved).
+	 * Returns a map with all valid moves for a player. Maps each piece to a list of all possible 
+	 * moves it can make across the board.
+	 * @param color
+	 * @param board
+	 * @return
 	 */
-	public void resetListAllValidMoves() {
-		listAllValidMoves.clear();
+	public ArrayList<Move> getAllLegalMoves(Color color, Board board) {
+		
+		ArrayList<Move> allLegalMoves = new ArrayList<Move>();
+		
+		for(int i = 0; i < 8; i++) {
+			for(int j = 0; j < 8; j++) {
+				Piece piece = board.getPieceFromBoard(i, j);
+				if(piece != null && piece.getColor() == color) {					
+					for(int k = 0; k < 8; k++) {
+						for(int l = 0; l < 8; l++) {
+							if(canMove(i, j, k, l, board)) {
+								allLegalMoves.add(new Move(i, j, k, l));
+							}
+						}
+					}
+				} 
+			}
+		}
+		return allLegalMoves;
 	}
 	
 	/**
@@ -381,7 +354,7 @@ public class GameManager {
 	 * @author maxharsh
 	 *
 	 */
-	private class Move {
+	private class ExecuteMove {
 		public void movePiece(int rowInitial, int columnInitial, int rowFinal, int columnFinal, Board board, Piece piece) {
 			Piece possibleCapture = board.getPieceFromBoard(rowFinal, columnFinal);
 
@@ -477,7 +450,7 @@ public class GameManager {
 		 * @param color
 		 * @param board
 		 */
-		public void rightCastle(Color color, Board board) {
+		public void rightCastle(Color color, Board board) { 
 			if(color == Color.WHITE) {
 				moveHelper(7, 7, 7, 5, board, board.getPieceFromBoard(7, 7));			
 				moveHelper(7, 4, 7, 6, board, board.getPieceFromBoard(7, 4));
@@ -502,7 +475,6 @@ public class GameManager {
 			if(possibleCapture != null) {
 				getCurrentPlayer().removePiece(possibleCapture);
 				players[(currentPlayerIndex + 1) % 2].addCaptured(possibleCapture);
-				updateScore(players[(currentPlayerIndex + 1) % 2], possibleCapture);
 			}
 		}
 	}
