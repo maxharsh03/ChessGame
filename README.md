@@ -4,8 +4,10 @@
 * Contains all basic rules of chess like castling, captures, en passant, and pawn promotion. 
 
 # Features
-* Will highlight valid move squares on the board in green
-* Will highligh king in red when in check
+* Will highlight valid moves on the board in green
+* Will highlight king in red when in check
+* Taken pieces appear to the left of the board
+* All moves are logged to the right of the board
 * Ability to flip the board
 * Ability to download move log as file
 
@@ -15,5 +17,3 @@
 # To Play
 * run ChessGUI.java in any code editor or IDE
 * run in terminal as ```java ChessGUI.java```
-
-`#0969DA`	
