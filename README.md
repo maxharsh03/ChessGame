@@ -7,3 +7,5 @@
 # To Play
 run ChessGUI.java 
 run in terminal as '''java ChessGUI.java'''
+
+`#0969DA`	
