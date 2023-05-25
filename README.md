@@ -1,4 +1,4 @@
-# ChessGame 
+# Chess AI
 * Creates a chess game that a user can play against an AI player
 * AI player moves based off of an evaluation function and a minimax search tree
 * Contains all basic rules of chess like castling, captures, en passant, and pawn promotion. 
