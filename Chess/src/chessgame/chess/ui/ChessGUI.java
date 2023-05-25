@@ -14,7 +14,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 
@@ -32,7 +31,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
-import Engine.Engine;
 import Engine.Minimax;
 import chessgame.chess.board.Board;
 import chessgame.chess.manager.GameManager;
@@ -40,7 +38,6 @@ import chessgame.chess.manager.Move;
 import chessgame.chess.manager.MoveWriter;
 import chessgame.chess.piece.Piece;
 import chessgame.chess.piece.Type;
-import chessgame.chess.player.Winner;
 
 /**
  * ChessGUI is the Graphical User Interface for the Chess Game. This class 
@@ -58,6 +55,7 @@ public class ChessGUI {
     private GameManager gm;
     private MoveLog moveLog;
     private Board board;
+    private GameSetup gameSetup;
     private JFrame frame;
     private GameHistoryPanel gameHistoryPanel;
     private TakenPiecesPanel takenPiecesPanel;
@@ -65,8 +63,6 @@ public class ChessGUI {
     private MoveWriter moveWriter;
     private Piece piece;
     private Piece capturedPiece;
-    private Winner winner;
-    private boolean computerDoneWithMove;
     private Minimax minimax;
     private static final int FRAME_WIDTH = 700;
     private static final int FRAME_HEIGHT = 600;
@@ -78,8 +74,9 @@ public class ChessGUI {
     private Point finalClick;
     private BoardDirection boardDirection;
     private boolean highlightLegalMoves;
-    private boolean humanMoveDone;
     private ArrayList<Integer[]> listAllValidMoves;
+    
+    private static final ChessGUI INSTANCE = new ChessGUI();
     
     /**
      * Constructs a ChessGUI object. 
@@ -92,7 +89,7 @@ public class ChessGUI {
         this.board = gm.getBoard();
         this.moveLog = new MoveLog();
         this.boardPanel = new BoardPanel();
-        this.winner = Winner.NONE;
+        //this.gameSetup = new GameSetup(this.frame, true);
         this.minimax = new Minimax(this.gm);
         this.moveWriter = new MoveWriter();
         this.gameHistoryPanel = new GameHistoryPanel();
@@ -112,6 +109,24 @@ public class ChessGUI {
         
     }
    
+    public static ChessGUI get() {
+    	return INSTANCE;
+    }
+    
+    private GameSetup getGameSetup() {
+    	return this.gameSetup;
+    }
+    
+    private void setupUpdate() {
+    	if(gm.getCurrentPlayer().getColor() == chessgame.chess.piece.Color.BLACK &&
+    			!gm.isCheckmate(board) && !gm.isStalemate(board)) { 
+    		// create an AI thread
+    		// execute ai move
+    		final AIMove aiMove = new AIMove();
+    		aiMove.execute();
+    	}
+    }
+    
     /**
      * 
      * @return
@@ -120,10 +135,12 @@ public class ChessGUI {
     	JMenuBar tableMenuBar = new JMenuBar();
     	tableMenuBar.add(createFileMenu());
     	tableMenuBar.add(createPreferencesMenu());
+    	//tableMenuBar.add(createOptionsMenu);
     	return tableMenuBar;
     }
     
-	public void executeAIMove() {
+    /*
+	public void executeAIMove(Move move) {
     	ArrayList<Piece> whiteCaptured = new ArrayList<Piece>();
     	ArrayList<Piece> blackCaptured = new ArrayList<Piece>();
     	
@@ -151,10 +168,9 @@ public class ChessGUI {
     	}
 		
     	this.gm.makeMove(mv[0], mv[1], mv[2], mv[3], board, board.getPieceFromBoard(mv[0], mv[1]));
-    	
     	String moveText = moveWriter.moveWrite(mv[0], mv[1], mv[2], mv[3], piece, capturedPiece, gm);
-		
 		moveLog.addMove(moveText);
+		
 		
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -166,12 +182,8 @@ public class ChessGUI {
 			}
 		});
 		
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// skip
-		}
 	}
+    */
     
     /**
      * Handles the case of a player winning. 
@@ -179,14 +191,9 @@ public class ChessGUI {
     public void endGameScenario() {
     	// handle case of checkmate after a move is made
 		if(gm.isCheckmate(board)) {
-			System.out.println("Checkmate!");
-			if(piece.getColor() == chessgame.chess.piece.Color.WHITE) {
-				winner = Winner.WHITE;
-			} else {
-				winner = Winner.BLACK;
-			}
+			System.out.println(gm.getCurrentPlayer().getColor() + " is in Checkmate");
 		} else if(gm.isStalemate(board)) {
-			winner = Winner.DRAW;
+			System.out.println(gm.getCurrentPlayer().getColor() + " is in Stalemate");
 		}
     }
     
@@ -253,13 +260,67 @@ public class ChessGUI {
     	return preferencesMenu;
     }
     
+    private boolean getHighlightLegalMoves() {
+    	return highlightLegalMoves;
+    }
+    
+    private void setHighlightLegalMoves(boolean highlightLegalMoves) {
+    	this.highlightLegalMoves = highlightLegalMoves;
+    }
+    
+    private GameHistoryPanel getGameHistoryPanel() {
+    	return this.gameHistoryPanel;
+    }
+    
+    private TakenPiecesPanel getTakenPiecesPanel() {
+    	return this.takenPiecesPanel;
+    }
+    
+    private BoardPanel getBoardPanel() {
+    	return this.boardPanel;
+    }
+    
+    private MoveLog getMoveLog() {
+    	return this.moveLog;
+    }
+    
+    private GameManager getGameManager() {
+    	return this.gm;
+    }
+    
+    private Board getGameManagerBoard() {
+    	return this.board;
+    }
+    
+    private MoveWriter getMoveWriter() {
+    	return this.moveWriter;
+    }
+    
     // If not working could be bc the class needs to be static
-    private class AIMove extends SwingWorker<Move, String> {
+    private static class AIMove extends SwingWorker<Move, String> {
 
+    	private ArrayList<Piece> whiteCaptured;
+    	private ArrayList<Piece> blackCaptured;
+    	
+    	private AIMove() {
+    		
+    	}
+    	
 		@Override
 		protected Move doInBackground() throws Exception {
-			Minimax miniMax = new Minimax(gm);
-			Move bestMove = minimax.getBestMove(2, board);
+			
+			whiteCaptured = new ArrayList<Piece>();
+	    	blackCaptured = new ArrayList<Piece>();
+	    	
+	    	for(int i = 0; i < ChessGUI.get().getGameManager().getPlayers()[0].getCapturedPieces().size(); i++) {
+	    		whiteCaptured.add(ChessGUI.get().getGameManager().getPlayers()[0].getCapturedPieces().get(i));
+	    	}
+	    	for(int i = 0; i < ChessGUI.get().getGameManager().getPlayers()[1].getCapturedPieces().size(); i++) {
+	    		blackCaptured.add(ChessGUI.get().getGameManager().getPlayers()[1].getCapturedPieces().get(i));
+	    	}
+			
+			Minimax miniMax = new Minimax(ChessGUI.get().getGameManager());
+			Move bestMove = miniMax.getBestMove(2, ChessGUI.get().getGameManagerBoard());
 			return bestMove;
 		}    
 		
@@ -267,10 +328,34 @@ public class ChessGUI {
 		public void done() {
 			try {
 				Move bestMove = get();
-				highlightLegalMoves = false;
-				gameHistoryPanel.redraw(moveLog);
-				takenPiecesPanel.redraw(moveLog.getMoveLog(), gm.getPlayers()[0].getCapturedPieces(), gm.getPlayers()[1].getCapturedPieces());
-				boardPanel.drawBoard();
+				int[] mv = bestMove.getMove();
+				
+				Piece piece = ChessGUI.get().getGameManagerBoard().getPieceFromBoard(mv[0], mv[1]);
+				Piece capturedPiece = ChessGUI.get().getGameManagerBoard().getPieceFromBoard(mv[2], mv[3]);
+				
+				ChessGUI.get().getGameManager().getPlayers()[0].getCapturedPieces().clear();
+				ChessGUI.get().getGameManager().getPlayers()[1].getCapturedPieces().clear();
+		    	    	
+		    	for(int i = 0; i < whiteCaptured.size(); i++) {
+		    		ChessGUI.get().getGameManager().getPlayers()[0].getCapturedPieces().add(whiteCaptured.get(i));
+		    	}
+		    	for(int i = 0; i < blackCaptured.size(); i++) {
+		    		ChessGUI.get().getGameManager().getPlayers()[1].getCapturedPieces().add(blackCaptured.get(i));
+		    	}
+				
+		    	ChessGUI.get().getGameManager().makeMove(mv[0], mv[1], mv[2], mv[3], 
+		    			ChessGUI.get().getGameManagerBoard(), ChessGUI.get().getGameManagerBoard().getPieceFromBoard(mv[0], mv[1]));
+		    	String moveText = ChessGUI.get().getMoveWriter().moveWrite(mv[0], mv[1], mv[2], mv[3], 
+		    			piece, capturedPiece, ChessGUI.get().getGameManager());
+				ChessGUI.get().getMoveLog().addMove(moveText);
+				
+				//ChessGUI.get().executeAIMove(bestMove);
+				ChessGUI.get().setHighlightLegalMoves(false);
+				ChessGUI.get().getGameHistoryPanel().redraw(ChessGUI.get().getMoveLog());
+				ChessGUI.get().getTakenPiecesPanel().redraw(ChessGUI.get().getMoveLog().getMoveLog(), 
+						ChessGUI.get().getGameManager().getPlayers()[0].getCapturedPieces(), 
+						ChessGUI.get().getGameManager().getPlayers()[1].getCapturedPieces());
+				ChessGUI.get().getBoardPanel().drawBoard();
 			} catch (InterruptedException | ExecutionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -451,6 +536,9 @@ public class ChessGUI {
 								initialClick = null;
 								finalClick = null;
 								
+								//whiteCapturedPieceCopy = gm.getPlayers()[0].getCapturedPieces();
+								//blackCapturedPieceCopy = gm.getPlayers()[1].getCapturedPieces();
+								
 								SwingUtilities.invokeLater(new Runnable() {
 									@Override 
 									public void run() {
@@ -458,15 +546,10 @@ public class ChessGUI {
 										gameHistoryPanel.redraw(moveLog);
 										takenPiecesPanel.redraw(moveLog.getMoveLog(), gm.getPlayers()[0].getCapturedPieces(), gm.getPlayers()[1].getCapturedPieces());
 										boardPanel.drawBoard();
-										humanMoveDone = true;
 									}
 								});
 								
-								if(gm.getCurrentPlayer().getColor() == chessgame.chess.piece.Color.BLACK) {
-									executeAIMove();
-									endGameScenario();
-									humanMoveDone = false;
-								}
+								setupUpdate();
 								
 							} else {
 								// make new pop-up window detailing error
@@ -557,6 +640,7 @@ public class ChessGUI {
     }
 
 	public static void main(String[] args) {
-        new ChessGUI();
+		ChessGUI.get();
+        //new ChessGUI();
     }
 }

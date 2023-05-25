@@ -65,8 +65,9 @@ public class TakenPiecesPanel extends JPanel {
 			
 		});
 		
-		for(Piece piece : whiteCapturedPieces) {
+		for(int i = 0; i < whiteCapturedPieces.size(); i++) {
 			try {
+				Piece piece = whiteCapturedPieces.get(i);
 				BufferedImage image = ImageIO.read(new File(piece.getImage()));
 				this.southPanel.add(new JLabel(new ImageIcon(image.getScaledInstance(25, 25, Image.SCALE_DEFAULT))));
 			} catch (IOException e) {
@@ -74,8 +75,9 @@ public class TakenPiecesPanel extends JPanel {
 			}
 		}
 		
-		for(Piece piece : blackCapturedPieces) {
+		for(int i = 0; i < blackCapturedPieces.size(); i++) {
 			try {
+				Piece piece = blackCapturedPieces.get(i);
 				BufferedImage image = ImageIO.read(new File(piece.getImage()));
 				this.northPanel.add(new JLabel(new ImageIcon(image.getScaledInstance(25, 25, Image.SCALE_DEFAULT))));
 			} catch (IOException e) {
