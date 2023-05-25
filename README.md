@@ -1,5 +1,7 @@
 # ChessGame
 ## Creates a chess game that a user can play against an artificial intelligence player. Contains all basic rules of chess like castling, captures, en passant, and pawn promotion.  
 
+<img width="703" alt="Screen Shot 2023-05-24 at 9 36 19 PM" src="https://github.com/maxharsh03/ChessGame/assets/82282926/cd3d1b65-33a6-4c7d-b8b2-987077e9f59e">
+
 # To Play
 run ChessGUI.java or in terminal java ChessGUI.java
