@@ -26,18 +26,15 @@ public class TakenPiecesPanel extends JPanel {
 	private JPanel northPanel;
 	private JPanel southPanel;
 	private static final EtchedBorder PANEL_BORDER = new EtchedBorder(EtchedBorder.RAISED);
-	private static final Color PANEL_COLOR = Color.decode("0xFDFE6");
-	private static final Dimension TAKEN_PIECES_DIMENSION = new Dimension(60, 100);
+	private static final Dimension TAKEN_PIECES_DIMENSION = new Dimension(60, 140);
 	
 	public TakenPiecesPanel() {
 		
 		super(new BorderLayout());
-		setBackground(Color.decode("0xFDF5E6"));
+		setOpaque(false);
 		setBorder(PANEL_BORDER);
 		this.northPanel = new JPanel(new GridLayout(8, 2));
 		this.southPanel = new JPanel(new GridLayout(8, 2));
-		this.northPanel.setBackground(PANEL_COLOR);
-		this.southPanel.setBackground(PANEL_COLOR);
 		this.add(this.northPanel, BorderLayout.NORTH);
 		this.add(this.southPanel, BorderLayout.SOUTH);
 		setPreferredSize(TAKEN_PIECES_DIMENSION);
@@ -69,7 +66,7 @@ public class TakenPiecesPanel extends JPanel {
 			try {
 				Piece piece = whiteCapturedPieces.get(i);
 				BufferedImage image = ImageIO.read(new File(piece.getImage()));
-				this.southPanel.add(new JLabel(new ImageIcon(image.getScaledInstance(25, 25, Image.SCALE_DEFAULT))));
+				this.southPanel.add(new JLabel(new ImageIcon(image.getScaledInstance(32, 32, Image.SCALE_DEFAULT))));
 			} catch (IOException e) {
 				// skip, this exception should never occur
 			}
@@ -79,12 +76,13 @@ public class TakenPiecesPanel extends JPanel {
 			try {
 				Piece piece = blackCapturedPieces.get(i);
 				BufferedImage image = ImageIO.read(new File(piece.getImage()));
-				this.northPanel.add(new JLabel(new ImageIcon(image.getScaledInstance(25, 25, Image.SCALE_DEFAULT))));
+				this.northPanel.add(new JLabel(new ImageIcon(image.getScaledInstance(32, 32, Image.SCALE_DEFAULT))));
 			} catch (IOException e) {
 				// skip, this exception should never occur
 			}
 		}
 		validate();
+		setBackground(Color.decode("0xFDF5E6"));
 		repaint();
 	}
 }

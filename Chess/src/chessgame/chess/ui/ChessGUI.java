@@ -59,7 +59,7 @@ public class ChessGUI {
     private JFrame frame;
     private GameHistoryPanel gameHistoryPanel;
     private TakenPiecesPanel takenPiecesPanel;
-    private BoardPanel boardPanel;
+    private BoardPanel boardPanel; 
     private MoveWriter moveWriter;
     private Piece piece;
     private Piece capturedPiece;
@@ -138,53 +138,7 @@ public class ChessGUI {
     	//tableMenuBar.add(createOptionsMenu);
     	return tableMenuBar;
     }
-    
-    /*
-	public void executeAIMove(Move move) {
-    	ArrayList<Piece> whiteCaptured = new ArrayList<Piece>();
-    	ArrayList<Piece> blackCaptured = new ArrayList<Piece>();
-    	
-    	for(int i = 0; i < gm.getPlayers()[0].getCapturedPieces().size(); i++) {
-    		whiteCaptured.add(gm.getPlayers()[0].getCapturedPieces().get(i));
-    	}
-    	for(int i = 0; i < gm.getPlayers()[1].getCapturedPieces().size(); i++) {
-    		blackCaptured.add(gm.getPlayers()[1].getCapturedPieces().get(i));
-    	}
-    	
-		Move move = minimax.getBestMove(2, board);
-		int[] mv = move.getMove();
-		
-		piece = board.getPieceFromBoard(mv[0], mv[1]);
-		capturedPiece = board.getPieceFromBoard(mv[2], mv[3]);
-		
-		gm.getPlayers()[0].getCapturedPieces().clear();
-    	gm.getPlayers()[1].getCapturedPieces().clear();
-    	    	
-    	for(int i = 0; i < whiteCaptured.size(); i++) {
-    		gm.getPlayers()[0].getCapturedPieces().add(whiteCaptured.get(i));
-    	}
-    	for(int i = 0; i < blackCaptured.size(); i++) {
-    		gm.getPlayers()[1].getCapturedPieces().add(blackCaptured.get(i));
-    	}
-		
-    	this.gm.makeMove(mv[0], mv[1], mv[2], mv[3], board, board.getPieceFromBoard(mv[0], mv[1]));
-    	String moveText = moveWriter.moveWrite(mv[0], mv[1], mv[2], mv[3], piece, capturedPiece, gm);
-		moveLog.addMove(moveText);
-		
-		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				highlightLegalMoves = false;
-				gameHistoryPanel.redraw(moveLog);
-				takenPiecesPanel.redraw(moveLog.getMoveLog(), gm.getPlayers()[0].getCapturedPieces(), gm.getPlayers()[1].getCapturedPieces());
-				boardPanel.drawBoard();
-			}
-		});
-		
-	}
-    */
-    
+ 
     /**
      * Handles the case of a player winning. 
      */
@@ -246,6 +200,7 @@ public class ChessGUI {
     	preferencesMenu.add(flipBoardItem);
     	preferencesMenu.addSeparator();
     	
+    	/*
     	JCheckBoxMenuItem legalMoveHighlighter = new JCheckBoxMenuItem("Highlight Legal Moves", false);
     	legalMoveHighlighter.addActionListener(new ActionListener() {
 
@@ -256,7 +211,7 @@ public class ChessGUI {
     	});
     	
     	preferencesMenu.add(legalMoveHighlighter);
-    	
+    	*/
     	return preferencesMenu;
     }
     
@@ -319,7 +274,8 @@ public class ChessGUI {
 	    		blackCaptured.add(ChessGUI.get().getGameManager().getPlayers()[1].getCapturedPieces().get(i));
 	    	}
 			
-			Minimax miniMax = new Minimax(ChessGUI.get().getGameManager());
+	    	GameManager gameManager = new GameManager(ChessGUI.get().getGameManagerBoard(), 1);
+	    	Minimax miniMax = new Minimax(gameManager);
 			Move bestMove = miniMax.getBestMove(2, ChessGUI.get().getGameManagerBoard());
 			return bestMove;
 		}    
@@ -349,7 +305,6 @@ public class ChessGUI {
 		    			piece, capturedPiece, ChessGUI.get().getGameManager());
 				ChessGUI.get().getMoveLog().addMove(moveText);
 				
-				//ChessGUI.get().executeAIMove(bestMove);
 				ChessGUI.get().setHighlightLegalMoves(false);
 				ChessGUI.get().getGameHistoryPanel().redraw(ChessGUI.get().getMoveLog());
 				ChessGUI.get().getTakenPiecesPanel().redraw(ChessGUI.get().getMoveLog().getMoveLog(), 
@@ -536,9 +491,6 @@ public class ChessGUI {
 								initialClick = null;
 								finalClick = null;
 								
-								//whiteCapturedPieceCopy = gm.getPlayers()[0].getCapturedPieces();
-								//blackCapturedPieceCopy = gm.getPlayers()[1].getCapturedPieces();
-								
 								SwingUtilities.invokeLater(new Runnable() {
 									@Override 
 									public void run() {
@@ -641,6 +593,5 @@ public class ChessGUI {
 
 	public static void main(String[] args) {
 		ChessGUI.get();
-        //new ChessGUI();
     }
 }

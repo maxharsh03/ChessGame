@@ -55,7 +55,7 @@ public class Minimax {
 				bestMove = legalMoves.get(i);
 			}	
 		}
-		//System.out.println(score);
+		System.out.println(score);
 		return bestMove;
 	}
 	

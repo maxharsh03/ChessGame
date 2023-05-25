@@ -1,20 +1,21 @@
-package com.chess.gui;
-
-import com.chess.engine.classic.Alliance;
-import com.chess.engine.classic.player.Player;
-import com.chess.gui.Table.PlayerType;
+package chessgame.chess.ui;
 
 import javax.swing.*;
+
+import chessgame.chess.player.Player;
+import chessgame.chess.player.Player.PlayerType;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 class GameSetup extends JDialog {
 
-    private PlayerType whitePlayerType;
-    private PlayerType blackPlayerType;
     private JSpinner searchDepthSpinner;
 
+    private PlayerType whitePlayerType;
+    private PlayerType blackPlayerType;
+    
     private static final String HUMAN_TEXT = "Human";
     private static final String COMPUTER_TEXT = "Computer";
 
@@ -79,8 +80,9 @@ class GameSetup extends JDialog {
         repaint();
     }
 
+ 
     boolean isAIPlayer(final Player player) {
-        if(player.getAlliance() == Alliance.WHITE) {
+        if(player.getColor() == chessgame.chess.piece.Color.WHITE) {
             return getWhitePlayerType() == PlayerType.COMPUTER;
         }
         return getBlackPlayerType() == PlayerType.COMPUTER;
@@ -93,7 +95,7 @@ class GameSetup extends JDialog {
     PlayerType getBlackPlayerType() {
         return this.blackPlayerType;
     }
-
+    
     private static JSpinner addLabeledSpinner(final Container c,
                                               final String label,
                                               final SpinnerModel model) {

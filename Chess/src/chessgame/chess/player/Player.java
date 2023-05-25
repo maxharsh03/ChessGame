@@ -96,4 +96,9 @@ public class Player {
     public void removePiece(Piece piece) {
         pieces.remove(piece);
     }
+    
+    public enum PlayerType {
+    	HUMAN, 
+    	COMPUTER
+    }
 }
